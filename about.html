@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About - AI Conference Deadlines</title>
+    <meta name="description" content="About AI Conference Deadlines">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="assets/css/custom.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg border-bottom mb-4 sticky-top bg-body">
+        <div class="container-xxl">
+            <a class="navbar-brand fw-semibold" href="index.html">AI Conference Deadlines</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
+                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="about.html">About</a></li>
+                </ul>
+                <div class="d-flex gap-2 align-items-center">
+                    <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button">
+                        Dark/Light
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-xxl">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold">About This Project</h1>
+                    <p class="lead text-muted">Tracking academic conference deadlines, made simple.</p>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="card-title fw-semibold">About This Site</h3>
+                        <p>
+                            As a graduate student at the UNIST NLP Lab, I began <strong>Conference Deadlines</strong> as
+                            a personal project to solve a simple problem: keeping track of the ever-growing list of
+                            conference deadlines. I decided to open-source the project to help graduate students and
+                            researchers stay organized and focused on their work.
+                        </p>
+                        <p>
+                            This website is a fully static, client-side application built with HTML5, Bootstrap, and
+                            vanilla JavaScript, and it's hosted on GitHub Pages. All data is managed through a simple
+                            'conferences.json' file, all with the goal of keeping it lightweight, fast, and easy to
+                            maintain. Much of the coding support for this project was provided by Google's Gemini.
+                        </p>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="card-title fw-semibold">How to Contribute</h3>
+                        <p>
+                            We Welcome contributions to keep our deadline list accurate and comprehensive. If you
+                            want to add or update a conference, you have two options:
+                        </p>
+                        <ol class="list-group list-group-flush list-group-numbered">
+                            <li class="list-group-item ps-0">
+                                <strong>Submit a Pull Request on <a
+                                        href="https://github.com/mindw96/Conference-Deadlines" target="_blank"
+                                        rel="noopener">GitHub</a>:</strong> Fork the repository,
+                                edit the 'conferences.json' file, and submit a pull request with your
+                                changes. This is the fastest way to contribute.
+                            </li>
+                            <li class="list-group-item ps-0">
+                                <strong>Send me an email:</strong> If you're not familiar with GitHub, simply send
+                                an
+                                email to <a href="mailto:mindw96@unist.ac.kr"><strong>mindw96@unist.ac.kr</strong></a>
+                                with the official website link for the conference you'd like to add.
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="card-title fw-semibold">Our Lab</h3>
+                        <p>Here is the lab I'm a part of. Please get in touch if you find our research interesting!</p>
+                        <p>
+                            At the <a href="https://nlp.unist.ac.kr/" target="_blank" rel="noopener">UNIST NLP Lab</a>
+                            eventually aims to develop a <strong>System 2-based language AI</strong> that simulates how
+                            humans expand and acquire knowledge, ultimately striving to build an
+                            <strong>Artificial General Language Intelligence (AGLI)</strong> intensively equipped with
+                            progressive knowledge learning and manipulation capabilities. Given this aim, our research
+                            goes beyond <strong>System 1</strong>
+                            abilities focused on short-term factual recall and aims to endow large language models
+                            (LLMs) with <strong>System 2-level cognitive skills</strong>-such as long-term learning,
+                            conceptual understanding, and creative knowledge composition.
+                        </p>
+
+                        <p>
+                            Particularly, noting that current LLMs are remarkable but still remain
+                            inefficient at <strong>knowledge injection and manipulation</strong> and fall qualitatively
+                            short of human-level capabilities, our current interests include:
+                        </p>
+
+                        <ul>
+                            <li><strong>Editing and leveraging knowledge in unstructured text</strong></li>
+                            <li><strong>Efficient reasoning based on knowledge learning</strong></li>
+                            <li><strong>Integrating external memory with parameter-efficient LLMs</strong>
+                            </li>
+                            <li><strong>Progressive knowledge expansion via Mixture-of-Experts (MoE)</strong></li>
+                        </ul>
+
+                        <p>
+                            In the mid-term, the lab also aims to develop <strong>parametric equivalents of in-context
+                                knowledge editing</strong>. In the long-term, we seek mechanisms for <strong>long-term
+                                conceptual learning</strong>, ultimately enabling LLM agents to master knowledge at a
+                            human level. Overall, we are dedicated to establishing <strong>foundational
+                                technologies</strong> that will drive <strong>next-generation language
+                                intelligence</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple theme toggle logic for the About page
+        document.addEventListener("DOMContentLoaded", () => {
+            const themeToggle = document.getElementById("themeToggle");
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-bs-theme", savedTheme);
+            }
+            themeToggle.addEventListener("click", () => {
+                const root = document.documentElement;
+                const cur = root.getAttribute("data-bs-theme") || "light";
+                const next = cur === "light" ? "dark" : "light";
+                root.setAttribute("data-bs-theme", next);
+                localStorage.setItem("theme", next);
+            });
+        });
+    </script>
+</body>
+
+</html>
