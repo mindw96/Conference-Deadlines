@@ -37,7 +37,7 @@
     <main class="container-xxl">
         <section class="card shadow-sm border-0 mb-3">
             <div class="card-body">
-                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <div class="d-flex flex-wrap align-items-baseline gap-2 mb-3">
                     <div class="flex-grow-1">
                         <label for="q" class="form-label">Search</label>
                         <input id="q" type="search" class="form-control" placeholder="ACL, EMNLP, Seoul…"
@@ -71,15 +71,17 @@
                             <option value="name_asc">Name A→Z</option>
                         </select>
                     </div>
-                    <div class="w-auto">
-                        <label class="form-label d-block">Results: <span id="resultCount">0</span></label>
+                    <div class="w-auto text-center">
+                        <label class="form-label d-block">Results:</label>
+                        <span id="resultCount">0</span>
                     </div>
-                    <p class="text-center text-body-secondary small">
-                        Didn't find the conference you were looking for?
-                        <a href="https://github.com/mindw96/Conference-Deadlines" style="color:grey;">Add it directly or
-                            request an update.</a>
-                    </p>
+
                 </div>
+                <p class="text-center text-body-secondary small">
+                    Didn't find the conference you were looking for?
+                    <a href="https://github.com/mindw96/Conference-Deadlines" style="color:grey;">Add it directly or
+                        request an update.</a>
+                </p>
             </div>
 
         </section>
