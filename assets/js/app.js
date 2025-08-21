@@ -23,7 +23,6 @@
         QS("#q").value = state.q;
         QS("#statusFilter").value = state.status;
         QS("#sortSelect").value = state.sort;
-        // category와 subfield는 rebuildFilters에서 설정됩니다.
     }
 
     function updatePermalink() {
@@ -121,9 +120,6 @@
         startCountdownTimer();
     }
 
-    /**
-     * [수정됨] 객체 형태의 areas를 올바르게 렌더링합니다.
-     */
     function renderAreaBadges(areas) {
         let html = "";
         for (const category in areas) {
@@ -195,13 +191,13 @@
             state.category = e.target.value;
             state.subfield = "all";
             window.updateSubfieldFilter();
-            updatePermalink(); // [수정됨]
+            updatePermalink();
             render();
         });
 
         on("#subfieldFilter", "change", e => {
             state.subfield = e.target.value;
-            updatePermalink(); // [수정됨]
+            updatePermalink();
             render();
         });
     }
@@ -267,32 +263,30 @@
             : "";
 
         return `
-    <article class="card h-100 shadow-sm border-0">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <h5 class="card-title mb-1">${name}</h5>
-            <div class="text-muted small">${item.location || ""}</div>
-            <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
-          </div>
-          <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
-        </div>
-        <div class="mb-2 tag-list">
-            ${renderAreaBadges(item.areas)}
-            ${renderTagChips(item.tags)}
-        </div>
-        ${note ? `<p class="small mb-2">${note}</p>` : ""}
-        <div class="list-group list-group-flush mb-2">
-          ${deadRows}
-        </div>
-      </div>
-      <div class="card-footer bg-transparent d-flex gap-2">
-        ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-      </div>
-    </article>`;
+                <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="card-title mb-1">${name}</h5>
+                        <div class="text-muted small">${item.location || ""}</div>
+                        <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
+                    </div>
+                    <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
+                    </div>
+                    <div class="mb-2 tag-list">
+                        ${renderAreaBadges(item.areas)}
+                        ${renderTagChips(item.tags)}
+                    </div>
+                    ${note ? `<p class="small mb-2">${note}</p>` : ""}
+                    <div class="list-group list-group-flush mb-2">
+                    ${deadRows}
+                    </div>
+                    <div class="card-footer bg-transparent d-flex gap-2">
+                        ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
+                    </div>
+                </article>`;
     }
 
-    // --- 카운트다운 로직 ---
     let __COUNTDOWN_TIMER = null;
     function startCountdownTimer() {
         if (__COUNTDOWN_TIMER) clearInterval(__COUNTDOWN_TIMER);

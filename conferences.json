@@ -3,10 +3,9 @@
     "id": "test",
     "name": "X-MAS 2025",
     "areas": {
-      "AI": [
-        "ML",
-        "NLP",
-        "CV"
+      "Test": [
+        "Test1",
+        "Test2"
       ]
     },
     "location": "Ulsan, Korea",
@@ -61,8 +60,7 @@
     "note": {},
     "timezone": "UTC",
     "tags": [
-      "ARR",
-      "double-blind"
+      "ARR"
     ]
   },
   {
@@ -83,8 +81,7 @@
     "note": {},
     "timezone": "AOE (UTC−12)",
     "tags": [
-      "ARR",
-      "double-blind"
+      "ARR"
     ]
   },
   {
