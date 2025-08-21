@@ -1,6 +1,6 @@
 # How to Add Conference
 
-[Conferences Deadlines] (https://alldeadlines.info)
+[Conferences Deadlines](https://alldeadlines.info)
 
 We welcome contributions to keep our deadline list accurate and comprehensive. If you want to add or update a conference, you have two options:
 
