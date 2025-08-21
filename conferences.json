@@ -1,25 +1,5 @@
 [
   {
-    "id": "test",
-    "name": "X-MAS 2025",
-    "areas": {
-      "Test": [
-        "Test1",
-        "Test2"
-      ]
-    },
-    "location": "Ulsan, Korea",
-    "dates": {
-      "conf_start": "2025-12-25",
-      "conf_end": "2025-12-31"
-    },
-    "deadlines": "2025-12-25T23:59:00Z",
-    "site": "",
-    "note": "",
-    "timezone": "AOE (UTC−12)",
-    "tags": []
-  },
-  {
     "id": "aaai-2026",
     "name": "AAAI 2026",
     "areas": {
@@ -76,7 +56,7 @@
       "conf_start": "2025-11-05",
       "conf_end": "2025-11-09"
     },
-    "deadlines": "2025-05-20T11:59:00Z",
+    "deadlines": "2025-05-20T23:59:00Z",
     "site": "https://2025.emnlp.org",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -101,6 +81,27 @@
     },
     "deadlines": "2025-05-11T23:59:00Z",
     "site": "https://neurips.cc/Conferences/2025",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
+  },
+  {
+    "id": "iclr-2026",
+    "name": "ICLR 2026",
+    "areas": {
+      "AI": [
+        "ML",
+        "NLP",
+        "CV"
+      ]
+    },
+    "location": "Rio de Janeiro, Brazil",
+    "dates": {
+      "conf_start": "2026-04-23",
+      "conf_end": "2026-04-27"
+    },
+    "deadlines": "2025-09-19T23:59:00Z",
+    "site": "https://iclr.cc/",
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
