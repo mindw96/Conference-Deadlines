@@ -242,9 +242,11 @@
             return `<span class="badge deadline-badge badge-closed">Closed</span>`;
         }
         const now = new Date();
-        const diffDays = Math.ceil((item.nextDue - now) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor((item.nextDue - now) / (1000 * 60 * 60 * 24));
         const cls = diffDays <= 7 ? "badge-soon" : "badge-upcoming";
-        return `<span class="badge deadline-badge ${cls}">D-${diffDays}</span>`;
+        const dayText = diffDays < 1 ? 'D-DAY' : `D-${diffDays}`;
+
+        return `<span class="badge deadline-badge ${cls}">${dayText}${dayText}</span>`;
     }
 
     function renderTagChips(tags) {
