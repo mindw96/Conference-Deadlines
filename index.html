@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conference Deadlines</title>
+    <meta name="description" content="Conference Deadlines Alert">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link href="assets/css/custom.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg border-bottom mb-3 sticky-top bg-body">
+        <div class="container-xxl">
+            <a class="navbar-brand fw-semibold" href="#">Conference Deadlines</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
+                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>
+                </ul>
+                <div class="d-flex gap-2 align-items-center">
+                    <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false"
+                        autocomplete="off">
+                        <span class="theme-label">Dark</span>/<span class="theme-label">Light</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-xxl">
+        <section class="card shadow-sm border-0 mb-3">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label for="q" class="form-label">Search</label>
+                        <input id="q" type="search" class="form-control" placeholder="ACL, EMNLP, Seoul…"
+                            autocomplete="off">
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select id="categoryFilter" class="form-select">
+                            <option value="all" selected>All</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="subfieldFilter" class="form-label">Subfield</label>
+                        <select id="subfieldFilter" class="form-select">
+                            <option value="all" selected>All</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="all" selected>All</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="soon">Soon (≤7d)</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label for="sortSelect" class="form-label">Sort</label>
+                        <select id="sortSelect" class="form-select">
+                            <option value="next_due_asc" selected>Next deadline ↑</option>
+                            <option value="name_asc">Name A→Z</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label class="form-label d-block">Results</label>
+                        <span id="resultCount" class="badge text-bg-secondary fs-6 px-3">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cards" class="card-grid"></section>
+
+        <section class="text-muted small my-4">
+            <p class="mb-1">All deadlines are AOE (UTC−12).</p>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>
