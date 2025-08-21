@@ -2,7 +2,7 @@
 (function () {
     const QS = s => document.querySelector(s);
     const QSA = s => [...document.querySelectorAll(s)];
-    const DATA_URL = "data/conferences.json";
+    const DATA_URL = "conferences.json";
 
     const state = {
         items: [],
