@@ -163,5 +163,24 @@
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
+  },
+  {
+    "id": "aps-2026",
+    "name": "APS Global Physics Summit 2026",
+    "areas": {
+      "Science": [
+        "Physics"
+      ]
+    },
+    "location": "Denver, Colorado, United States",
+    "dates": {
+      "conf_start": "2026-03-15",
+      "conf_end": "2026-03-20"
+    },
+    "deadlines": "2025-10-23T23:59:00Z",
+    "site": "https://summit.aps.org/",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
   }
 ]
