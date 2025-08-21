@@ -200,6 +200,17 @@
             updatePermalink();
             render();
         });
+
+        on("#themeToggle", "click", () => {
+            const root = document.documentElement;
+            const cur = root.getAttribute("data-bs-theme") || "light";
+            const next = cur === "light" ? "dark" : "light";
+            root.setAttribute("data-bs-theme", next);
+            localStorage.setItem("theme", next);
+        });
+
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) { document.documentElement.setAttribute("data-bs-theme", savedTheme); }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
