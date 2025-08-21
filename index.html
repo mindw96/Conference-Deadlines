@@ -37,25 +37,25 @@
     <main class="container-xxl">
         <section class="card shadow-sm border-0 mb-3">
             <div class="card-body">
-                <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-6 col-lg-4">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <div class="flex-grow-1">
                         <label for="q" class="form-label">Search</label>
                         <input id="q" type="search" class="form-control" placeholder="ACL, EMNLP, Seoul…"
                             autocomplete="off">
                     </div>
-                    <div class="col-6 col-md-3 col-lg-2">
+                    <div class="w-auto">
                         <label for="categoryFilter" class="form-label">Category</label>
                         <select id="categoryFilter" class="form-select">
                             <option value="all" selected>All</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3 col-lg-2">
+                    <div class="w-auto">
                         <label for="subfieldFilter" class="form-label">Subfield</label>
                         <select id="subfieldFilter" class="form-select">
                             <option value="all" selected>All</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3 col-lg-2">
+                    <div class="w-auto">
                         <label for="statusFilter" class="form-label">Status</label>
                         <select id="statusFilter" class="form-select">
                             <option value="all" selected>All</option>
@@ -64,23 +64,24 @@
                             <option value="closed">Closed</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3 col-lg-2">
+                    <div class="w-auto">
                         <label for="sortSelect" class="form-label">Sort</label>
                         <select id="sortSelect" class="form-select">
                             <option value="next_due_asc" selected>Next deadline ↑</option>
                             <option value="name_asc">Name A→Z</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3 col-lg-2">
+                    <div class="w-auto">
                         <label class="form-label d-block">Results: <span id="resultCount">0</span></label>
                     </div>
+                    <p class="text-center text-body-secondary small">
+                        Didn't find the conference you were looking for?
+                        <a href="https://github.com/mindw96/Conference-Deadlines" style="color:grey;">Add it directly or
+                            request an update.</a>
+                    </p>
                 </div>
             </div>
-            <p class="text-center text-body-secondary small">
-                Didn't find the conference you were looking for?
-                <a href="https://github.com/mindw96/Conference-Deadlines" style="color:grey;">Add it directly or request
-                    an update.</a>
-            </p>
+
         </section>
 
         <section class="text-muted small my-4">
