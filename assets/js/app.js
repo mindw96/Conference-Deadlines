@@ -266,12 +266,12 @@
                 <article class="card h-100 shadow-sm border-0">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h5 class="card-title mb-1">${name}</h5>
-                        <div class="text-muted small">${item.location || ""}</div>
-                        <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
-                    </div>
-                    <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
+                        <div>
+                            <h5 class="card-title mb-1">${name}</h5>
+                            <div class="text-muted small">${item.location || ""}</div>
+                            <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
+                        </div>
+                        <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
                     </div>
                     <div class="mb-2 tag-list">
                         ${renderAreaBadges(item.areas)}
@@ -279,11 +279,9 @@
                     </div>
                     ${note ? `<p class="small mb-2">${note}</p>` : ""}
                     <div class="list-group list-group-flush mb-2">
-                    ${deadRows}
+                        ${deadRows}
                     </div>
-                    <div class="card-footer bg-transparent d-flex gap-2">
-                        ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                    </div>
+                    ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
                 </article>`;
     }
 

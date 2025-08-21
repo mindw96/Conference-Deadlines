@@ -15,7 +15,7 @@
     },
     "deadlines": "2025-12-25T23:59:00Z",
     "site": "",
-    "note": {},
+    "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
   },
@@ -36,7 +36,7 @@
     },
     "deadlines": "2025-07-25T23:59:00Z",
     "site": "https://aaai.org/Conferences/AAAI-26/",
-    "note": {},
+    "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
   },
@@ -57,7 +57,7 @@
       {}
     ],
     "site": "https://2026.aclweb.org",
-    "note": {},
+    "note": "",
     "timezone": "UTC",
     "tags": [
       "ARR"
@@ -78,7 +78,7 @@
     },
     "deadlines": "2025-05-20T11:59:00Z",
     "site": "https://2025.emnlp.org",
-    "note": {},
+    "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": [
       "ARR"
@@ -101,7 +101,7 @@
     },
     "deadlines": "2025-05-11T23:59:00Z",
     "site": "https://neurips.cc/Conferences/2025",
-    "note": {},
+    "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
   }
