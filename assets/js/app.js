@@ -246,7 +246,7 @@
         const cls = diffDays <= 7 ? "badge-soon" : "badge-upcoming";
         const dayText = diffDays < 1 ? 'D-DAY' : `D-${diffDays}`;
 
-        return `<span class="badge deadline-badge ${cls}">${dayText}${dayText}</span>`;
+        return `<span class="badge deadline-badge ${cls}">${dayText}</span>`;
     }
 
     function renderTagChips(tags) {
