@@ -105,10 +105,31 @@
             if (state.sort === "name_asc") {
                 return (a.name || "").localeCompare(b.name || "");
             }
-            if (!a.nextDue && !b.nextDue) return (a.name || "").localeCompare(b.name || "");
-            if (!a.nextDue) return 1;
-            if (!b.nextDue) return -1;
-            return a.nextDue - b.nextDue;
+
+            // Default sort: by next upcoming deadline.
+            const aHasDeadline = !!a.nextDue;
+            const bHasDeadline = !!b.nextDue;
+
+            if (aHasDeadline && bHasDeadline) {
+                // 1. If both have deadlines, sort by the nearest deadline.
+                return a.nextDue - b.nextDue;
+            } else if (aHasDeadline) {
+                // 2. If only 'a' has a deadline, 'a' comes first.
+                return -1;
+            } else if (bHasDeadline) {
+                // 3. If only 'b' has a deadline, 'b' comes first.
+                return 1;
+            } else {
+                // 4. If neither has a deadline (closed or coming_soon), sort by conference start date.
+                const startDateA = a.dates?.conf_start;
+                const startDateB = b.dates?.conf_start;
+
+                if (startDateA && startDateB) {
+                    return new Date(startDateA) - new Date(startDateB);
+                }
+                // Fallback to sorting by name if no start date is available.
+                return (a.name || "").localeCompare(b.name || "");
+            }
         });
     }
 
