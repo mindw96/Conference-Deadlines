@@ -33,9 +33,7 @@
       "conf_start": "2026-07-02",
       "conf_end": "2026-07-07"
     },
-    "deadlines": [
-      {}
-    ],
+    "deadlines": "",
     "site": "https://2026.aclweb.org",
     "note": "",
     "timezone": "UTC",
@@ -141,6 +139,27 @@
     },
     "deadlines": "2025-09-04T23:59:00Z",
     "site": "https://chi2026.acm.org/",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
+  },
+  {
+    "id": "siggraph-2026",
+    "name": "SIGGRAPH 2026",
+    "areas": {
+      "CS": [
+        "Graphics",
+        "Animation",
+        "VR/AR"
+      ]
+    },
+    "location": "Los Angeles, California",
+    "dates": {
+      "conf_start": "2026-07-19",
+      "conf_end": "2026-07-23"
+    },
+    "deadlines": "",
+    "site": "https://s2026.siggraph.org/",
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
