@@ -13,6 +13,7 @@
         subfield: "all",
         status: "all",
         sort: "next_due_asc",
+        showPast: false,
     };
 
     // --- URL MANAGEMENT ---
@@ -116,11 +117,13 @@
 
         state.filtered = state.items.filter(it => {
             // Filter out conferences where the end date has passed.
-            const confEnd = it.dates?.conf_end;
-            if (confEnd) {
-                const confEndDate = new Date(confEnd);
-                if (confEndDate < today) {
-                    return false; // Hide if conference ended before today.
+            if (!state.showPast) {
+                const confEnd = it.dates?.conf_end;
+                if (confEnd) {
+                    const confEndDate = new Date(confEnd);
+                    if (confEndDate < today) {
+                        return false; // Hide if conference ended before today.
+                    }
                 }
             }
 
@@ -337,6 +340,11 @@
             const next = cur === "light" ? "dark" : "light";
             root.setAttribute("data-bs-theme", next);
             localStorage.setItem("theme", next);
+        });
+
+        on("#showPastConf", "change", e => {
+            state.showPast = e.target.checked;
+            render();
         });
 
         const savedTheme = localStorage.getItem("theme");
