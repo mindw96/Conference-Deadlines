@@ -105,5 +105,24 @@
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
+  },
+  {
+    "id": "miccai-2025",
+    "name": "MICCAI 2025",
+    "areas": {
+      "AI": [
+        "Medical"
+      ]
+    },
+    "location": "Daejeon, Republic of Korea.",
+    "dates": {
+      "conf_start": "2025-09-23",
+      "conf_end": "2025-09-27"
+    },
+    "deadlines": "2025-02-13T23:59:00Z",
+    "site": "https://conferences.miccai.org/2025/en/default.asp",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
   }
 ]
