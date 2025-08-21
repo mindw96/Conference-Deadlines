@@ -1,10 +1,7 @@
 [
   {
     "id": "test",
-    "name": {
-      "ko": "X-MAS 2025",
-      "en": "X-MAS 2025"
-    },
+    "name": "X-MAS 2025",
     "areas": {
       "AI": [
         "ML",
@@ -17,12 +14,7 @@
       "conf_start": "2025-12-25",
       "conf_end": "2025-12-31"
     },
-    "deadlines": [
-      {
-        "type": "abstract",
-        "due": "2025-12-25T23:59:00Z"
-      }
-    ],
+    "deadlines": "2025-12-25T23:59:00Z",
     "site": "",
     "note": {},
     "timezone": "AOE (UTC−12)",
@@ -30,10 +22,7 @@
   },
   {
     "id": "aaai-2026",
-    "name": {
-      "ko": "AAAI 2026",
-      "en": "AAAI 2026"
-    },
+    "name": "AAAI 2026",
     "areas": {
       "AI": [
         "ML",
@@ -46,12 +35,7 @@
       "conf_start": "2026-01-20",
       "conf_end": "2026-01-27"
     },
-    "deadlines": [
-      {
-        "type": "abstract",
-        "due": "2025-07-25T23:59:00Z"
-      }
-    ],
+    "deadlines": "2025-07-25T23:59:00Z",
     "site": "https://aaai.org/Conferences/AAAI-26/",
     "note": {},
     "timezone": "AOE (UTC−12)",
@@ -59,10 +43,7 @@
   },
   {
     "id": "acl-2026",
-    "name": {
-      "ko": "ACL 2026",
-      "en": "ACL 2026"
-    },
+    "name": "ACL 2026",
     "areas": {
       "AI": [
         "NLP"
@@ -86,10 +67,7 @@
   },
   {
     "id": "emnlp-2025",
-    "name": {
-      "ko": "EMNLP 2025",
-      "en": "EMNLP 2025"
-    },
+    "name": "EMNLP 2025",
     "areas": {
       "AI": [
         "NLP"
@@ -100,12 +78,7 @@
       "conf_start": "2025-11-05",
       "conf_end": "2025-11-09"
     },
-    "deadlines": [
-      {
-        "type": "paper",
-        "due": "2025-05-20T11:59:00Z"
-      }
-    ],
+    "deadlines": "2025-05-20T11:59:00Z",
     "site": "https://2025.emnlp.org",
     "note": {},
     "timezone": "AOE (UTC−12)",
@@ -116,10 +89,7 @@
   },
   {
     "id": "neurips-2025",
-    "name": {
-      "ko": "NeurIPS 2025",
-      "en": "NeurIPS 2025"
-    },
+    "name": "NeurIPS 2025",
     "areas": {
       "AI": [
         "ML",
@@ -132,12 +102,7 @@
       "conf_start": "2025-12-02",
       "conf_end": "2025-12-07"
     },
-    "deadlines": [
-      {
-        "type": "paper",
-        "due": "2025-05-11T23:59:00Z"
-      }
-    ],
+    "deadlines": "2025-05-11T23:59:00Z",
     "site": "https://neurips.cc/Conferences/2025",
     "note": {},
     "timezone": "AOE (UTC−12)",
