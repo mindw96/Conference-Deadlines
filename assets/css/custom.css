@@ -14,6 +14,10 @@
     --focus-outline-color: #0dcaf0;
 }
 
+.p {
+    margin-bottom: 0;
+}
+
 .card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
