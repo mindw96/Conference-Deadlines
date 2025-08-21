@@ -1,7 +1,10 @@
 (function () {
+    // --- UTILITY FUNCTIONS ---
     const QS = s => document.querySelector(s);
     const DATA_URL = "conferences.json";
 
+    // --- APPLICATION STATE ---
+    // Holds the application's current state, including filters, sort order, and data.
     const state = {
         items: [],
         filtered: [],
@@ -12,6 +15,11 @@
         sort: "next_due_asc",
     };
 
+    // --- URL MANAGEMENT ---
+    /**
+     * Reads filter/sort parameters from the URL query string and applies them to the state.
+     * This allows users to share links with specific filters active.
+     */
     function parseQuery() {
         const url = new URL(location.href);
         state.q = url.searchParams.get("q") || "";
@@ -25,6 +33,10 @@
         QS("#sortSelect").value = state.sort;
     }
 
+    /**
+     * Updates the URL in the address bar to reflect the current filter/sort state.
+     * This creates a permalink for the current view.
+     */
     function updatePermalink() {
         const url = new URL(location.href);
         url.searchParams.set("q", state.q);
@@ -35,8 +47,17 @@
         history.replaceState(null, "", url.toString());
     }
 
+    // --- DATA HANDLING ---
+    /**
+     * Processes a raw conference object from JSON into a more usable format.
+     * It calculates the status (upcoming, soon, closed) and finds the next deadline.
+     * @param {object} raw - The raw conference object.
+     * @returns {object} The normalized conference object.
+     */
     function normalizeItem(raw) {
         const areas = (typeof raw.areas === 'object' && raw.areas !== null) ? raw.areas : {};
+
+        // Handle various 'deadlines' formats (string or array for flexibility).
         let deadlinesList = [];
         if (typeof raw.deadlines === 'string' && raw.deadlines) {
             deadlinesList = [{ type: 'Deadline', due: raw.deadlines }];
@@ -51,6 +72,7 @@
             due: new Date(d.due)
         }));
 
+        // Calculate the next upcoming deadline and the conference's status.
         let nextDue = null;
         let status = "closed";
         if (deadlines.length === 0) {
@@ -71,12 +93,19 @@
         return { ...raw, areas, deadlines, nextDue, status };
     }
 
+    /**
+     * Fetches and processes the conference data from the JSON file.
+     */
     function loadData() {
         return fetch(DATA_URL, { cache: "no-cache" })
             .then(r => r.json())
             .then(list => list.map(normalizeItem));
     }
 
+    // --- CORE LOGIC (FILTER & SORT) ---
+    /**
+     * Filters the global conference list based on the current state.
+     */
     function applyFilters() {
         const q = state.q.trim().toLowerCase();
         state.filtered = state.items.filter(it => {
@@ -100,6 +129,9 @@
         sortItems();
     }
 
+    /**
+     * Sorts the filtered conference list based on the current sort order.
+     */
     function sortItems() {
         state.filtered.sort((a, b) => {
             if (state.sort === "name_asc") {
@@ -133,12 +165,65 @@
         });
     }
 
+    // --- RENDERING ---
+    /**
+     * Main render function: applies filters/sort and updates the DOM with the results.
+     */
     function render() {
         applyFilters();
         const html = state.filtered.map(renderCard).join("");
         QS("#cards").innerHTML = html;
         QS("#resultCount").textContent = state.filtered.length;
         startCountdownTimer();
+    }
+
+    /**
+     * Generates the HTML for a single conference card.
+     * @param {object} item - The conference object to render.
+     * @returns {string} The HTML string for the card.
+     */
+    function renderCard(item) {
+        const name = item.name || "";
+        const url = item.site || "#";
+        const note = item.note || "";
+        const hasDeadlines = Array.isArray(item.deadlines) && item.deadlines.length > 0;
+
+        const deadRows = hasDeadlines
+            ? item.deadlines.map(d => `
+                <div>
+                  <span class="small">
+                    <strong>${d.type}:</strong> ${formatDateAOE(d.due)}
+                  </span>
+                </div>
+              `).join("")
+            : `<span class="small text-body">Coming Soon!</span>`;
+
+        const dBadgeHTML = dBadge(item);
+        const countdownHTML = item.nextDue
+            ? `<div class="js-countdown small mt-1" data-deadline="${item.nextDue.toISOString()}">--:--:--</div>`
+            : "";
+
+        return `
+                <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h5 class="card-title mb-1">${name}</h5>
+                            <div class="text-muted small">${item.location || ""}</div>
+                            <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
+                        </div>
+                        <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
+                    </div>
+                    <div class="mb-2 tag-list">
+                        ${renderAreaBadges(item.areas)}
+                        ${renderTagChips(item.tags)}
+                    </div>
+                    ${note ? `<p class="small mb-2">${note}</p>` : ""}
+                    <div class="list-group list-group-flush mb-2">
+                        ${deadRows}
+                    </div>
+                    ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
+                </article>`;
     }
 
     function renderAreaBadges(areas) {
@@ -152,6 +237,10 @@
         return html;
     }
 
+    // --- UI & EVENT HANDLING ---
+    /**
+     * Scans all conference data to dynamically build the category and subfield filter options.
+     */
     function rebuildFilters() {
         const categoryFilter = QS("#categoryFilter");
         const subfieldFilter = QS("#subfieldFilter");
@@ -198,6 +287,9 @@
         updateSubfieldFilter();
     }
 
+    /**
+     * Attaches event listeners to all user controls (search, filters, theme toggle, etc.).
+     */
     function bindControls() {
         const on = (sel, type, handler) => {
             const el = QS(sel);
@@ -234,19 +326,6 @@
         if (savedTheme) { document.documentElement.setAttribute("data-bs-theme", savedTheme); }
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        parseQuery();
-        bindControls();
-        loadData().then(items => {
-            state.items = items;
-            rebuildFilters();
-            render();
-        }).catch(err => {
-            console.error("Failed to load data:", err);
-            QS("#cards").innerHTML = `<div class="alert alert-danger">Failed to load data.</div>`;
-        });
-    });
-
     function formatDateAOE(date) {
         return new Intl.DateTimeFormat('sv-SE', {
             timeZone: 'Etc/GMT+12',
@@ -275,50 +354,6 @@
         return tags.map(t => `<span class="badge rounded-pill text-bg-light border">${t}</span>`).join("");
     }
 
-    function renderCard(item) {
-        const name = item.name || "";
-        const url = item.site || "#";
-        const note = item.note || "";
-        const hasDeadlines = Array.isArray(item.deadlines) && item.deadlines.length > 0;
-
-        const deadRows = hasDeadlines
-            ? item.deadlines.map(d => `
-                <div>
-                  <span class="small">
-                    <strong>${d.type}:</strong> ${formatDateAOE(d.due)}
-                  </span>
-                </div>
-              `).join("")
-            : `<span class="small text-body">Coming Soon!</span>`;
-
-        const dBadgeHTML = dBadge(item);
-        const countdownHTML = item.nextDue
-            ? `<div class="js-countdown small mt-1" data-deadline="${item.nextDue.toISOString()}">--:--:--</div>`
-            : "";
-
-        return `
-                <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h5 class="card-title mb-1">${name}</h5>
-                            <div class="text-muted small">${item.location || ""}</div>
-                            <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
-                        </div>
-                        <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
-                    </div>
-                    <div class="mb-2 tag-list">
-                        ${renderAreaBadges(item.areas)}
-                        ${renderTagChips(item.tags)}
-                    </div>
-                    ${note ? `<p class="small mb-2">${note}</p>` : ""}
-                    <div class="list-group list-group-flush mb-2">
-                        ${deadRows}
-                    </div>
-                    ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                </article>`;
-    }
-
     let __COUNTDOWN_TIMER = null;
     function startCountdownTimer() {
         if (__COUNTDOWN_TIMER) clearInterval(__COUNTDOWN_TIMER);
@@ -327,6 +362,7 @@
             __COUNTDOWN_TIMER = setInterval(updateCountdowns, 1000);
         }
     }
+
     function updateCountdowns() {
         const now = Date.now();
         let needsRerender = false;
@@ -350,6 +386,7 @@
             render();
         }
     }
+
     function formatCountdown(ms) {
         const sec = Math.floor(ms / 1000);
         const d = Math.floor(sec / 86400);
@@ -360,4 +397,21 @@
         const hhmmss = `${pad(h)}:${pad(m)}:${pad(s)}`;
         return d > 0 ? `${d}D ${hhmmss}` : hhmmss;
     }
+
+    // --- INITIALIZATION ---
+    /**
+     * Main entry point: runs when the DOM is fully loaded.
+     */
+    document.addEventListener("DOMContentLoaded", () => {
+        parseQuery();
+        bindControls();
+        loadData().then(items => {
+            state.items = items;
+            rebuildFilters();
+            render();
+        }).catch(err => {
+            console.error("Failed to load data:", err);
+            QS("#cards").innerHTML = `<div class="alert alert-danger">Failed to load data.</div>`;
+        });
+    });
 })();
