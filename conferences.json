@@ -182,5 +182,25 @@
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
+  },
+  {
+    "id": "ismb-2026",
+    "name": "ISMB 2026",
+    "areas": {
+      "Bio": [
+        "Bioinformatics",
+        "Computational Biology"
+      ]
+    },
+    "location": "Washington, D.C., United States",
+    "dates": {
+      "conf_start": "2026-07-12",
+      "conf_end": "2026-07-16"
+    },
+    "deadlines": "",
+    "site": "https://www.iscb.org/ismb2026/home",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
   }
 ]
