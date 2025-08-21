@@ -108,7 +108,23 @@
      */
     function applyFilters() {
         const q = state.q.trim().toLowerCase();
+
+        // Get the current date, with time set to 00:00:00 for accurate comparison.
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+
         state.filtered = state.items.filter(it => {
+            // Filter out conferences where the end date has passed.
+            const confEnd = it.dates?.conf_end;
+            if (confEnd) {
+                const confEndDate = new Date(confEnd);
+                if (confEndDate < today) {
+                    return false; // Hide if conference ended before today.
+                }
+            }
+
+            // Existing filter logic for status, category, etc.
             if (state.status !== "all" && it.status !== state.status) return false;
             if (state.category !== "all" && !it.areas.hasOwnProperty(state.category)) return false;
             if (state.subfield !== "all") {
@@ -126,6 +142,7 @@
             }
             return true;
         });
+
         sortItems();
     }
 
