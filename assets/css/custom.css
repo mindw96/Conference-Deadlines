@@ -1,0 +1,142 @@
+/* Custom styles for the static Conference Deadline app */
+:root {
+    --soon-threshold-days: 7;
+    --badge-bg: #fff;
+    --badge-fg: #000;
+    --badge-border: var(--bs-border-color);
+    --focus-outline-color: #0d6efd;
+    /* 포커스 색상 변수 추가 */
+}
+
+[data-bs-theme="dark"] {
+    --badge-bg: #000;
+    --badge-fg: #fff;
+    --badge-border: var(--bs-border-color);
+    --focus-outline-color: #0dcaf0;
+    /* 다크 모드용 포커스 색상 */
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.deadline-badge {
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+.badge-upcoming {
+    --badge-bg: #0d6efd;
+    --badge-fg: #fff;
+    background-color: #0d6efd;
+}
+
+/* primary */
+.badge-soon {
+    --badge-bg: #dc3545;
+    --badge-fg: #fff;
+    background-color: #dc3545;
+}
+
+/* danger */
+.badge-closed {
+    --badge-bg: #6c757d;
+    --badge-fg: #fff;
+    background-color: #6c757d;
+}
+
+.badge-comingsoon {
+    --badge-bg: #f0f33b;
+    --badge-fg: #000;
+    background-color: #eff168;
+}
+
+.badge {
+    background-color: var(--badge-bg) !important;
+    color: var(--badge-fg) !important;
+    border: 1px solid var(--badge-border) !important;
+}
+
+/* secondary */
+.tag {
+    display: inline-block;
+    border-radius: 999px;
+    padding: .15rem .5rem;
+    font-size: .8rem;
+    border: 1px solid var(--bs-border-color);
+    margin-right: .25rem;
+    margin-bottom: .25rem;
+}
+
+.card small.timezone {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Compact navbar in desktop */
+@media (min-width: 992px) {
+    .navbar {
+        padding-top: .35rem;
+        padding-bottom: .35rem;
+    }
+}
+
+/* 태그 컨테이너: 줄바꿈 간격 */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem .35rem;
+}
+
+/* 분야 뱃지: Bootstrap 배지 기반 */
+.badge-area,
+.badge-area-nlp,
+.badge-area-ml,
+.badge-area-vision,
+.badge-area-systems,
+.badge-area-default {
+    background-color: var(--badge-bg) !important;
+    color: var(--badge-fg) !important;
+    border: 1px solid var(--badge-border) !important;
+}
+
+/* 실시간 카운트다운 숫자 가독성 */
+.js-countdown {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* --- ACCESSIBILITY ADDITIONS (WCAG 2.1 AA) --- */
+
+/* WCAG 2.4.7 Focus Visible:
+  키보드 사용자를 위해 포커스 상태를 명확하게 표시합니다.
+  :focus-visible을 사용하여 마우스 클릭이 아닌 키보드 탐색 시에만 적용됩니다.
+*/
+a:focus-visible,
+button:focus-visible,
+[tabindex="0"]:not(.card):focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--focus-outline-color);
+    outline-offset: 2px;
+    border-radius: .25rem;
+    /* 옵션: 포커스 스타일에 약간의 둥근 모서리 추가 */
+}
+
+/*
+  WCAG 1.4.1 Use of Color:
+  스크린 리더 사용자를 위해 화면에 보이지 않는 설명 텍스트를 제공하는 클래스.
+  HTML에서 이 클래스를 사용하여 색상으로만 전달되는 정보(예: 뱃지 상태)에
+  대한 설명을 추가해야 합니다.
+*/
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
