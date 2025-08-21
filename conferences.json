@@ -114,13 +114,33 @@
         "Medical"
       ]
     },
-    "location": "Daejeon, Republic of Korea.",
+    "location": "Daejeon, Republic of Korea",
     "dates": {
       "conf_start": "2025-09-23",
       "conf_end": "2025-09-27"
     },
     "deadlines": "2025-02-13T23:59:00Z",
     "site": "https://conferences.miccai.org/2025/en/default.asp",
+    "note": "",
+    "timezone": "AOE (UTC−12)",
+    "tags": []
+  },
+  {
+    "id": "chi-2026",
+    "name": "ACM CHI 2026",
+    "areas": {
+      "CS": [
+        "HCI",
+        "UX/UI"
+      ]
+    },
+    "location": "Barcelona, Spain",
+    "dates": {
+      "conf_start": "2026-04-13",
+      "conf_end": "2026-04-17"
+    },
+    "deadlines": "2025-09-04T23:59:00Z",
+    "site": "https://chi2026.acm.org/",
     "note": "",
     "timezone": "AOE (UTC−12)",
     "tags": []
