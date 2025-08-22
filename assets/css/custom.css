@@ -217,6 +217,19 @@ body {
     background-clip: text;
 }
 
+/* === 네비게이션 바 === */
+.navbar {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    transition: all var(--transition-base);
+}
+
+[data-bs-theme="dark"] .navbar {
+    background: rgba(10, 14, 26, 0.8);
+}
 
 /* --- ACCESSIBILITY ADDITIONS (WCAG 2.1 AA) --- */
 
