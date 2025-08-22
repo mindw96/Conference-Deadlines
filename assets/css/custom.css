@@ -222,7 +222,14 @@ body {
 
 /* 실시간 카운트다운 숫자 가독성 */
 .js-countdown {
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 
