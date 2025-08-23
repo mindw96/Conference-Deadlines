@@ -461,12 +461,12 @@
 
         if (type === 'outlook') {
             // Outlook Calendar URL 형식
-            return `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
+            return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
         }
         
         return '#'; // 기본값
     }
-    
+
     // --- INITIALIZATION ---
     /**
      * Main entry point: runs when the DOM is fully loaded.
