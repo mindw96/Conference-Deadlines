@@ -189,24 +189,36 @@
     /**
      * Main render function: applies filters/sort and updates the DOM with the results.
      */
+    // app.js
+
     function render() {
         applyFilters();
-        const html = state.filtered.map(renderCard).join("");
-        QS("#cards").innerHTML = html;
 
+        const cardsContainer = QS("#cards");
         const noResultsContainer = QS("#noResults");
 
+        // [수정] 로직을 깔끔하게 정리합니다.
         if (state.filtered.length === 0) {
-            cardsContainer.innerHTML = '';
+            // 결과가 없으면: '결과 없음' 메시지를 보여주고, 카드 컨테이너는 숨깁니다.
+            cardsContainer.innerHTML = ''; // 기존 카드 내용 비우기
+            cardsContainer.style.display = 'none';
             noResultsContainer.classList.remove('d-none');
         } else {
-            noResultsContainer.classList.add('d-none');
+            // 결과가 있으면: 카드 컨테이너를 보여주고, '결과 없음' 메시지는 숨깁니다.
             const html = state.filtered.map(renderCard).join("");
             cardsContainer.innerHTML = html;
+            cardsContainer.style.display = 'grid'; // 원래 display 속성으로 복원
+            noResultsContainer.classList.add('d-none');
         }
 
         QS("#resultCount").textContent = state.filtered.length;
         startCountdownTimer();
+
+        // Popover 기능을 활성화하는 코드
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus' });
+        });
     }
 
     /**
@@ -478,7 +490,7 @@
             // Outlook Calendar URL 형식
             return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
         }
-        
+
         return '#'; // 기본값
     }
 
