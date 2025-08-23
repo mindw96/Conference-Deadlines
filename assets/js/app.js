@@ -275,7 +275,7 @@
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
                                 <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
-                                <li><a id="ics-download-link" class="dropdown-item" href="#">Download ICS (.ics)</a></li>
+                                <li><a class="dropdown-item ics-download-link" href="#">Download ICS (.ics)</a></li>
                             </ul>
                         </div>
                     </div>
