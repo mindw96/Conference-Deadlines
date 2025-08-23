@@ -251,6 +251,7 @@
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
                                 <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
+                                <li><button id="icsLink" class="btn btn-outline-primary" type="button">Download ICS (.ics)</button></li>
                             </ul>
                         </div>
                     </div>
@@ -467,6 +468,59 @@
         }
         
         return '#'; // 기본값
+    }
+
+    /**
+     * Generates the content for a universal .ics calendar file.
+     * @param {object} item - The conference object.
+     * @returns {string} The content of the .ics file.
+     */
+    function generateICSContent(item) {
+        const toUTCFormat = (dateStr) => {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toISOString().replace(/-|:|\.\d+/g, '');
+        };
+
+        const startDate = toUTCFormat(item.dates?.conf_start);
+        const endDate = toUTCFormat(item.dates?.conf_end);
+        const title = item.name;
+        const location = item.location || '';
+        const description = `Conference Website: ${item.site || 'N/A'}`;
+
+        // iCalendar (ICS) file format
+        return [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'BEGIN:VEVENT',
+            `UID:${item.id}@aideadlines.info`,
+            `DTSTAMP:${toUTCFormat(new Date().toISOString())}`,
+            `DTSTART:${startDate}`,
+            `DTEND:${endDate}`,
+            `SUMMARY:${title}`,
+            `DESCRIPTION:${description}`,
+            `LOCATION:${location}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\n');
+    }
+
+    /**
+     * Triggers the download of a dynamically generated .ics file.
+     * @param {object} item - The conference object.
+     */
+    function downloadICSFile(item) {
+        const icsContent = generateICSContent(item);
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${item.id}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 
     // --- INITIALIZATION ---
