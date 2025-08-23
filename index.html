@@ -40,8 +40,8 @@
                 <div class="d-flex flex-wrap align-items-baseline gap-2 mb-3">
                     <div class="flex-grow-1">
                         <label for="q" class="form-label">Search</label>
-                        <input id="q" type="search" class="form-control" placeholder="Conference, Category, City, Country…"
-                            autocomplete="off">
+                        <input id="q" type="search" class="form-control"
+                            placeholder="Conference, Category, City, Country…" autocomplete="off">
                     </div>
                     <div class="w-auto">
                         <label for="categoryFilter" class="form-label">Category</label>
@@ -96,6 +96,10 @@
         </section>
 
         <section id="cards" class="card-grid"></section>
+        <div id="noResults" class="text-center my-5 d-none">
+            <h4>No conferences found</h4>
+            <p class="text-muted">Try adjusting your filters.</p>
+        </div>
 
         <footer class="container-xxl pt-4 my-md-5 pt-md-5 border-top">
             <small class="d-block mb-3 text-body-secondary">

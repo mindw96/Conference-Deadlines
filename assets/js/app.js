@@ -193,8 +193,25 @@
         applyFilters();
         const html = state.filtered.map(renderCard).join("");
         QS("#cards").innerHTML = html;
+
+        const noResultsContainer = QS("#noResults");
+
+        if (state.filtered.length === 0) {
+            cardsContainer.innerHTML = '';
+            noResultsContainer.classList.remove('d-none');
+        } else {
+            noResultsContainer.classList.add('d-none');
+            const html = state.filtered.map(renderCard).join("");
+            cardsContainer.innerHTML = html;
+        }
+
         QS("#resultCount").textContent = state.filtered.length;
         startCountdownTimer();
+
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus' });
+        });
     }
 
     /**
@@ -538,5 +555,6 @@
             console.error("Failed to load data:", err);
             QS("#cards").innerHTML = `<div class="alert alert-danger">Failed to load data.</div>`;
         });
+
     });
 })();
