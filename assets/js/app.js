@@ -243,7 +243,15 @@
                         ${deadRows}
                     </div>
                     ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                    
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Add to Calendar
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
+                            <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
+                        </ul>
+                    </div>
                 </article>`;
     }
 
@@ -424,6 +432,41 @@
         return d > 0 ? `${d}D ${hhmmss}` : hhmmss;
     }
 
+    /**
+     * Generates a calendar link for Google or Outlook.
+     * @param {string} type - 'google' or 'outlook'.
+     * @param {object} item - The conference object.
+     * @returns {string} The generated calendar link.
+     */
+    function generateCalendarLink(type, item) {
+        // 날짜 형식을 YYYYMMDDTHHMMSSZ (UTC) 형태로 변환
+        const toUTCFormat = (dateStr) => {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            // toISOString() -> "2025-12-25T00:00:00.000Z"
+            // .replace(/-|:|\.\d+/g, '') -> "20251225T000000Z"
+            return d.toISOString().replace(/-|:|\.\d+/g, '');
+        };
+
+        const title = encodeURIComponent(item.name);
+        const startTime = toUTCFormat(item.dates?.conf_start);
+        const endTime = toUTCFormat(item.dates?.conf_end);
+        const location = encodeURIComponent(item.location || '');
+        const details = encodeURIComponent(`Conference Website: ${item.site || 'N/A'}`);
+
+        if (type === 'google') {
+            // Google Calendar URL 형식
+            return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&location=${location}&details=${details}`;
+        }
+
+        if (type === 'outlook') {
+            // Outlook Calendar URL 형식
+            return `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
+        }
+        
+        return '#'; // 기본값
+    }
+    
     // --- INITIALIZATION ---
     /**
      * Main entry point: runs when the DOM is fully loaded.
