@@ -563,5 +563,17 @@
             QS("#cards").innerHTML = `<div class="alert alert-danger">Failed to load data.</div>`;
         });
 
+        // .ics download link event listener
+        const cardsContainer = QS("#cards");
+        cardsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('ics-download-link')) {
+                event.preventDefault();
+                const confId = event.target.getAttribute('data-conf-id');
+                const item = state.items.find(conf => conf.id === confId);
+                if (item) {
+                    downloadICSFile(item);
+                }
+            }
+        });
     });
 })();
