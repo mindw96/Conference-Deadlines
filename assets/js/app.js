@@ -242,7 +242,7 @@
                     <div class="list-group list-group-flush mb-2">
                         ${deadRows}
                     </div>
-                    <div class="row">
+                    <div class="d-flex gap-2">
                         ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
