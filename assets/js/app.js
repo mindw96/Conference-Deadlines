@@ -242,15 +242,17 @@
                     <div class="list-group list-group-flush mb-2">
                         ${deadRows}
                     </div>
-                    ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Add to Calendar
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
-                            <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
-                        </ul>
+                    <div class="row">
+                        ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add to Calendar
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
+                                <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </article>`;
     }
