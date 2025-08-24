@@ -6,7 +6,7 @@
     // IMPORTANT: Replace with your actual Supabase URL and Anon Key
     const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- APPLICATION STATE ---
     // Holds the application's current state, including filters, sort order, and data.
@@ -101,7 +101,7 @@
      **/
     async function loadData() {
         // Fetch all conferences and their related deadlines in one go
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('conferences')
             .select(`
                 id, name, conf_start_date, conf_end_date, location, site_url, areas, tags, note, timezone,
