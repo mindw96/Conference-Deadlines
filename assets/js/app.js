@@ -6,7 +6,7 @@
     // IMPORTANT: Replace with your actual Supabase URL and Anon Key
     const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
-    const supabaseCient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- APPLICATION STATE ---
     // Holds the application's current state, including filters, sort order, and data.
@@ -101,7 +101,7 @@
      **/
     async function loadData() {
         // Fetch all conferences and their related deadlines in one go
-        const { data, error } = await supabaseCient
+        const { data, error } = await supabaseClient
             .from('conferences')
             .select(`
                 id, name, conf_start_date, conf_end_date, location, site_url, areas, tags, note, timezone,
@@ -609,5 +609,97 @@
                 }
             }
         });
+
+        // --- Suggestion Modal & Form Logic ---
+        const subfieldsContainer = QS('#subfieldsContainer');
+        const addSubfieldBtn = QS('#addSubfieldBtn');
+        const suggestModal = QS('#suggestModal');
+        const suggestionForm = QS("#suggestionForm");
+
+        // Function to add a new subfield input field
+        const addSubfieldInput = () => {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <input type="text" class="form-control subfield-input" placeholder="e.g., NLP">
+                <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
+            `;
+            subfieldsContainer.appendChild(div);
+        };
+
+        // Function to reset the subfield inputs to the initial state
+        const resetSubfieldInputs = () => {
+            if (!subfieldsContainer) return;
+            subfieldsContainer.innerHTML = `
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
+                </div>
+            `;
+        };
+
+        if (addSubfieldBtn && subfieldsContainer) {
+            addSubfieldBtn.addEventListener('click', addSubfieldInput);
+
+            // Use event delegation to handle removing subfield inputs
+            subfieldsContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-subfield-btn')) {
+                    event.target.closest('.input-group').remove();
+                }
+            });
+        }
+
+        // Reset the form (including dynamic fields) when the modal is hidden
+        if (suggestModal) {
+            suggestModal.addEventListener('hidden.bs.modal', () => {
+                suggestionForm?.reset();
+                QS('#suggestionAlert')?.classList.add('d-none');
+                resetSubfieldInputs();
+            });
+        }
+
+        // Handle form submission
+        if (suggestionForm && subfieldsContainer) {
+            suggestionForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                if (!suggestionForm.checkValidity()) {
+                    suggestionForm.reportValidity();
+                    return;
+                }
+
+                const submitButton = suggestionForm.querySelector('button[type="submit"]');
+                const alertBox = QS("#suggestionAlert");
+
+                const subfieldValues = [...subfieldsContainer.querySelectorAll('.subfield-input')]
+                    .map(input => input.value.trim())
+                    .filter(value => value); // Filter out empty strings
+
+                const suggestion = {
+                    name: QS("#confName").value, site_url: QS("#confUrl").value, location: QS("#confLocation").value,
+                    conf_start_date: QS("#confStartDate").value || null, conf_end_date: QS("#confEndDate").value || null,
+                    deadline_date: QS("#confDeadline").value ? new Date(QS("#confDeadline").value).toISOString() : null,
+                    category: QS("#category").value, subfields: subfieldValues.join(', ')
+                };
+
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+
+                const { error } = await supabaseClient.from('conference_suggestions').insert([suggestion]);
+
+                if (error) {
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = `Error: ${error.message}`;
+                    console.error("Suggestion submission error:", error);
+                } else {
+                    alertBox.className = 'alert alert-success';
+                    alertBox.textContent = 'Thank you! Your suggestion has been submitted for review.';
+                    suggestionForm.reset();
+                    resetSubfieldInputs();
+                }
+
+                alertBox.classList.remove('d-none');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit for Review';
+            });
+        }
     });
 })();

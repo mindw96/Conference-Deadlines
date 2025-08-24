@@ -1,8 +1,8 @@
 # How to Add Conference
 
-[Conference Deadlines](https://alldeadlines.info)
+[Conferences Deadlines](https://alldeadlines.info)
 
 We welcome contributions to keep our deadline list accurate and comprehensive. If you want to add or update a conference, you have two options:
 
-1.  **Request to Add a Conference**: Use the "Request to add a Conference" button on the main page to submit new conferences for review.
-2.  **Open an Issue on GitHub**: For other updates or suggestions, please open an issue in the repository.
+1.  **Submit a Pull Request on GitHub**: Fork the repository, edit the `conferences.json` file, and submit a pull request with your changes. This is the fastest way to contribute.
+2.  **Send me an email**: If you're not familiar with GitHub, simply send an email to [mindw96@unist.ac.kr](mailto:mindw96@unist.ac.kr) with the official website link for the conference you'd like to add.
