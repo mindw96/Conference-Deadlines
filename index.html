@@ -88,9 +88,10 @@
 
         <section class="text-muted small my-4">
             <p class="mb-1">
-                Didn't find the conference you were looking for?
-                <a href="https://github.com/mindw96/Conference-Deadlines" target="_blank" rel="noopener">Add it
-                    directly or request an update.</a>
+                <span class="ms-2"></span>Didn't find the conference you were looking for?</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#suggestModal">
+                    Request to add a Conference
+                </button>
             </p>
             <p class="mb-1">All deadlines are AOE (UTC−12)</p>
         </section>
@@ -114,6 +115,66 @@
             <small class="d-block text-body-secondary mt-2">© 2025 Conference Deadlines</small>
         </footer>
     </main>
+
+    <!-- Suggestion Modal -->
+    <div class="modal fade" id="suggestModal" tabindex="-1" aria-labelledby="suggestModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="suggestModalLabel">Add a New Conference</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="suggestionForm">
+                        <div class="mb-3">
+                            <label for="confName" class="form-label">Conference Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="confName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confLocation" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="confLocation" placeholder="City, Country">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="confStartDate" class="form-label">Conference Start Date</label>
+                                <input type="date" class="form-control" id="confStartDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confEndDate" class="form-label">Conference End Date</label>
+                                <input type="date" class="form-control" id="confEndDate">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="category" placeholder="AI, CS, Science" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subfields <span class="text-danger">*</span></label>
+                            <div id="subfieldsContainer">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
+                                </div>
+                            </div>
+                            <button type="button" id="addSubfieldBtn" class="btn btn-sm btn-outline-secondary mt-1">Add Subfield</button>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confDeadline" class="form-label">Primary Deadline (AOE Time)</label>
+                            <input type="datetime-local" class="form-control" id="confDeadline">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confUrl" class="form-label">Official Website URL <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="confUrl" placeholder="https://example.com" required>
+                        </div>
+                        <div id="suggestionAlert" class="d-none"></div>
+                        <div class="modal-footer pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit for Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
