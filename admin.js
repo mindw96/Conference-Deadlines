@@ -15,6 +15,7 @@
     const noSuggestionsDiv = QS('#no-suggestions');
     let toastInstance = null; // To hold the Bootstrap Toast instance
 
+
     // --- AUTH FUNCTIONS ---
     async function handleLogin(event) {
         event.preventDefault();
@@ -175,7 +176,7 @@
         if (errorToastEl) {
             toastInstance = new bootstrap.Toast(errorToastEl);
         }
-
+        
         checkUserSession();
     });
 })();
