@@ -19,8 +19,10 @@
     // --- AUTH FUNCTIONS ---
     async function handleLogin(event) {
         event.preventDefault();
-        const email = QS('#email').value;
-        const password = QS('#password').value;
+        const form = event.target; // event.target은 submit 이벤트가 발생한 form 요소를 가리킵니다.
+        const email = form.elements.email.value; // form 안에서 id가 'email'인 요소의 값을 찾습니다.
+        const password = form.elements.password.value; // form 안에서 id가 'password'인 요소의 값을 찾습니다.
+
 
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -176,7 +178,7 @@
         if (errorToastEl) {
             toastInstance = new bootstrap.Toast(errorToastEl);
         }
-        
+
         checkUserSession();
     });
 })();
