@@ -13,22 +13,24 @@
     const userEmailSpan = QS('#user-email');
     const suggestionsList = QS('#suggestions-list');
     const noSuggestionsDiv = QS('#no-suggestions');
+    let toastInstance = null; // To hold the Bootstrap Toast instance
 
     // --- AUTH FUNCTIONS ---
     async function handleLogin(event) {
         event.preventDefault();
         const email = QS('#email').value;
         const password = QS('#password').value;
-        const alertBox = QS('#login-alert');
 
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            alertBox.className = 'alert alert-danger';
-            alertBox.textContent = error.message;
-            alertBox.classList.remove('d-none');
+            // Show error in a toast notification
+            if (toastInstance) {
+                const toastBody = QS('#errorToast .toast-body');
+                toastBody.textContent = error.message;
+                toastInstance.show();
+            }
         } else {
-            alertBox.classList.add('d-none');
             checkUserSession();
         }
     }
@@ -167,6 +169,13 @@
         QS('#login-form').addEventListener('submit', handleLogin);
         QS('#logout-button').addEventListener('click', handleLogout);
         suggestionsList.addEventListener('click', handleSuggestionAction);
+
+        // Initialize the toast instance
+        const errorToastEl = QS('#errorToast');
+        if (errorToastEl) {
+            toastInstance = new bootstrap.Toast(errorToastEl);
+        }
+
         checkUserSession();
     });
 })();
