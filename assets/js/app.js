@@ -1,7 +1,12 @@
 (function () {
     // --- UTILITY FUNCTIONS ---
     const QS = s => document.querySelector(s);
-    const DATA_URL = "conferences.json";
+    
+    // --- SUPABASE SETUP ---
+    // IMPORTANT: Replace with your actual Supabase URL and Anon Key
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- APPLICATION STATE ---
     // Holds the application's current state, including filters, sort order, and data.
@@ -50,21 +55,16 @@
 
     // --- DATA HANDLING ---
     /**
-     * Processes a raw conference object from JSON into a more usable format.
+     * Processes a raw conference object from the database into a more usable format.
      * It calculates the status (upcoming, soon, closed) and finds the next deadline.
-     * @param {object} raw - The raw conference object.
+     * @param {object} raw - The raw conference object from Supabase.
      * @returns {object} The normalized conference object.
      */
     function normalizeItem(raw) {
         const areas = (typeof raw.areas === 'object' && raw.areas !== null) ? raw.areas : {};
 
-        // Handle various 'deadlines' formats (string or array for flexibility).
-        let deadlinesList = [];
-        if (typeof raw.deadlines === 'string' && raw.deadlines) {
-            deadlinesList = [{ type: 'Deadline', due: raw.deadlines }];
-        } else if (Array.isArray(raw.deadlines)) {
-            deadlinesList = raw.deadlines;
-        }
+        // With Supabase, `raw.deadlines` is always an array of {type, due} objects.
+        const deadlinesList = Array.isArray(raw.deadlines) ? raw.deadlines : [];
 
         const parseable = (d) => d && d.due && !isNaN(Date.parse(d.due));
         const now = new Date();
@@ -96,11 +96,45 @@
 
     /**
      * Fetches and processes the conference data from the JSON file.
-     */
-    function loadData() {
-        return fetch(DATA_URL, { cache: "no-cache" })
-            .then(r => r.json())
-            .then(list => list.map(normalizeItem));
+     *
+     * Fetches and processes the conference data from the Supabase database.
+     **/
+    async function loadData() {
+        // Fetch all conferences and their related deadlines in one go
+        const { data, error } = await supabase
+            .from('conferences')
+            .select(`
+                id, name, conf_start_date, conf_end_date, location, site_url, areas, tags, note, timezone,
+                deadlines (
+                    deadline_type,
+                    due_date
+                )
+            `);
+
+        if (error) {
+            console.error("Error fetching data from Supabase:", error);
+            throw error;
+        }
+
+        // Transform the data to match the application's expected format
+        const transformedData = data.map(conf => {
+            const deadlines = conf.deadlines.map(d => ({
+                type: d.deadline_type,
+                due: d.due_date
+            }));
+
+            return {
+                ...conf,
+                site: conf.site_url,
+                dates: {
+                    conf_start: conf.conf_start_date,
+                    conf_end: conf.conf_end_date
+                },
+                deadlines: deadlines
+            };
+        });
+
+        return transformedData.map(normalizeItem);
     }
 
     // --- CORE LOGIC (FILTER & SORT) ---
