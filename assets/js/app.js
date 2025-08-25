@@ -276,19 +276,29 @@
 
         const now = new Date();
 
-        let nextDeadlineHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
+        let deadlineDisplayHTML;
 
         if (item.nextDue) {
             const nextDeadlineDetails = item.deadlines.find(d => d.due.getTime() === item.nextDue.getTime());
             const deadlineType = nextDeadlineDetails ? nextDeadlineDetails.type : 'Next Deadline';
-
-            nextDeadlineHTML = `
-                                <div>
-                                    <span class="small">
-                                        <strong>${deadlineType}:</strong> ${formatDateAOE(item.nextDue)}
-                                    </span>
-                                </div>
-                            `;
+            deadlineDisplayHTML = `
+                                    <div>
+                                        <span class="small">
+                                            <strong>${deadlineType}:</strong> ${formatDateAOE(item.nextDue)}
+                                        </span>
+                                    </div>
+                                `;
+        } else if (item.deadlines && item.deadlines.length > 0) {
+            const lastDeadline = item.deadlines[item.deadlines.length - 1];
+            deadlineDisplayHTML = `
+            <div>
+                <span class="small text-body-secondary">
+                    <em>(Passed)</em> <strong>${lastDeadline.type}:</strong> ${formatDateAOE(lastDeadline.due)}
+                </span>
+            </div>
+        `;
+        } else {
+            deadlineDisplayHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
         }
 
         const deadlineMenuItemsHTML = item.deadlines.filter(deadline => deadline.due > now).map((deadline, index) => {
@@ -301,7 +311,6 @@
                 description: `Type: ${deadline.type}`
             };
 
-            // 각 마감일별로 제목 + 3가지 캘린더 링크를 그룹으로 묶어 생성
             return `
             <li><h6 class="dropdown-header ps-3 text-body-secondary">${deadline.type}</h6></li>
             <li><a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank" rel="noopener">Google Calendar</a></li>
@@ -328,18 +337,15 @@
                             data-conf-id="${item.id}">Download ICS (.ics)</a></li>
                         
                         ${deadlineMenuItemsHTML ? '<li><hr class="dropdown-divider"></li>' : ''}
-                        
+            
                         ${deadlineMenuItemsHTML}
                     </ul>
                 </div>
             `;
 
-
-
         const dBadgeHTML = dBadge(item);
         const countdownHTML = item.nextDue ? `<div class="js-countdown small mt-1" data-deadline="${item.nextDue.toISOString()}">--:--:--</div>` : "";
 
-        // 4. 최종 카드 HTML 반환
         return `
                 <article class="card h-100 shadow-sm border-0">
                     <div class="card-body">
@@ -356,7 +362,7 @@
                             ${renderTagChips(item.tags)}
                         </div>
                         <div class="list-group list-group-flush mb-2">
-                            ${nextDeadlineHTML} 
+                            ${deadlineDisplayHTML} 
                         </div>
                         <div class="d-flex gap-2">
                             ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
