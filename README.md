@@ -1,11 +1,11 @@
 # Conference Deadlines
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![GitHub Actions Status](https://github.com/mindw96/Conference-Deadlines/actions/workflows/pages.yml/badge.svg)](https://github.com/mindw96/Conference-Deadlines/actions)
+[![Github Pages Build Status](https://github.com/mindw96/Conference-Deadlines/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/mindw96/Conference-Deadlines/actions/workflows/pages/pages-build-deployment)
 
 An open-source project to track and manage academic conference deadlines, built with a serverless backend.
 
-Live Site → [aideadlines.info](https://aideadlines.info){: target="_blank"}
+Live Site → [aideadlines.info](https://alldeadlines.info{target=_blank})
 
 ---
 
@@ -24,14 +24,14 @@ Live Site → [aideadlines.info](https://aideadlines.info){: target="_blank"}
 ## Tech Stack
 
 * **Frontend:** HTML5, CSS3, Vanilla JavaScript, Bootstrap 5
-* **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, Edge Functions, Auth)
+* **Backend & Database:** Supabase (PostgreSQL, Edge Functions, Auth)
 * **Deployment:** GitHub Pages (Frontend), Supabase (Backend)
 
 ## How to Contribute
 
 Contributions are always welcome!
 
-* **Suggest a Change:** To add a new conference or suggest an edit, please use the contact information on the [About page](https://aideadlines.info/about.html) or open an issue on GitHub.
+* **Suggest a Change:** To add a new conference or suggest an edit, please use the contact information on the [About page](https://alldeadlines.info/about.html) or open an issue on GitHub.
 * **Contribute Code:** If you want to fix a bug or add a new feature, please fork the repository and submit a pull request.
 
 ## License
