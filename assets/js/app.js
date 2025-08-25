@@ -275,7 +275,7 @@
             description: `Conference Website: ${item.site || 'N/A'}`
         };
 
-        const deadlineLinksHTML = item.deadlines.map(deadline => {
+        const deadlineLinksHTML = item.deadlines.map((deadline, index) => {
             const deadlineEvent = {
                 id: `${item.id}-deadline-${index}`, // 고유 ID
                 title: `${item.name}: ${deadline.type}`,
