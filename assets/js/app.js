@@ -293,7 +293,7 @@
             deadlineDisplayHTML = `
             <div>
                 <span class="small text-body-secondary">
-                    <em>(Passed)</em> <strong>${lastDeadline.type}:</strong> ${formatDateAOE(lastDeadline.due)}
+                    <strong>${lastDeadline.type}:</strong> ${formatDateAOE(lastDeadline.due)}
                 </span>
             </div>
         `;
