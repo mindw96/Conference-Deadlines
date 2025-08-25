@@ -13,6 +13,11 @@
     const userEmailSpan = QS('#user-email');
     const suggestionsList = QS('#suggestions-list');
     const noSuggestionsDiv = QS('#no-suggestions');
+    const conferenceListDiv = QS('#conference-list');
+    const noConferencesDiv = QS('#no-conferences');
+    const editModalEl = QS('#editModal');
+    const editModal = new bootstrap.Modal(editModalEl); // 모달 인스턴스 생성
+
     let toastInstance = null; // To hold the Bootstrap Toast instance
 
 
@@ -59,6 +64,20 @@
         renderSuggestions(data);
     }
 
+    async function fetchConferences() {
+        const { data, error } = await supabase
+            .from('conferences')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching conferences:', error);
+            conferenceListDiv.innerHTML = `<div class="alert alert-danger">Failed to load conferences.</div>`;
+            return;
+        }
+        renderConferences(data);
+    }
+
     function renderSuggestions(suggestions) {
         if (suggestions.length === 0) {
             noSuggestionsDiv.classList.remove('d-none');
@@ -82,6 +101,32 @@
                 </div>
             </div>
         `).join('');
+    }
+
+    function renderConferences(conferences) {
+        if (conferences.length === 0) {
+            noConferencesDiv.classList.remove('d-none');
+            conferenceListDiv.innerHTML = '';
+            return;
+        }
+
+        noConferencesDiv.classList.add('d-none');
+        conferenceListDiv.innerHTML = conferences.map(conf => `
+        <div class="card" data-id="${conf.id}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-1">${conf.name}</h5>
+                        <p class="card-text text-muted small">${conf.location || 'Location not set'}</p>
+                    </div>
+                    <div class="d-flex gap-2 align-items-start">
+                        <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
+                        <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
     }
 
     async function handleSuggestionAction(event) {
@@ -161,6 +206,7 @@
             authControls.classList.remove('d-none');
             userEmailSpan.textContent = session.user.email;
             fetchSuggestions();
+            fetchConferences();
         } else {
             loginView.classList.remove('d-none');
             adminView.classList.add('d-none');
@@ -180,5 +226,79 @@
         }
 
         checkUserSession();
+
+        conferenceListDiv.addEventListener('click', (event) => {
+            const target = event.target;
+            const card = target.closest('.card');
+            if (!card) return;
+
+            const confId = card.dataset.id;
+
+            if (target.classList.contains('delete-btn')) {
+                handleDelete(confId, card);
+            } else if (target.classList.contains('edit-btn')) {
+                handleEdit(confId);
+            }
+        });
+
+        QS('#editForm').addEventListener('submit', handleUpdate);
+
+        async function handleDelete(id, cardElement) {
+            if (confirm(`Are you sure you want to delete the conference "${id}"? This action cannot be undone.`)) {
+                const { error } = await supabase.from('conferences').delete().eq('id', id);
+                if (error) {
+                    alert(`Error deleting conference: ${error.message}`);
+                } else {
+                    cardElement.remove();
+                    alert('Conference deleted successfully.');
+                }
+            }
+        }
+
+        async function handleEdit(id) {
+            // 특정 학회 정보 가져오기
+            const { data, error } = await supabase.from('conferences').select('*').eq('id', id).single();
+
+            if (error) {
+                alert(`Could not fetch conference details: ${error.message}`);
+                return;
+            }
+
+            // 모달 폼에 데이터 채우기
+            QS('#editConfId').value = data.id;
+            QS('#editConfName').value = data.name;
+            QS('#editConfUrl').value = data.site_url;
+            QS('#editConfLocation').value = data.location;
+            QS('#editConfStartDate').value = data.conf_start_date;
+            QS('#editConfEndDate').value = data.conf_end_date;
+
+            // 모달 띄우기
+            editModal.show();
+        }
+
+        async function handleUpdate(event) {
+            event.preventDefault();
+            const id = QS('#editConfId').value;
+
+            // 폼에서 수정된 데이터 가져오기
+            const updatedData = {
+                name: QS('#editConfName').value,
+                site_url: QS('#editConfUrl').value,
+                location: QS('#editConfLocation').value,
+                conf_start_date: QS('#editConfStartDate').value || null,
+                conf_end_date: QS('#editConfEndDate').value || null,
+            };
+
+            // Supabase에 업데이트 요청
+            const { error } = await supabase.from('conferences').update(updatedData).eq('id', id);
+
+            if (error) {
+                alert(`Error updating conference: ${error.message}`);
+            } else {
+                alert('Conference updated successfully!');
+                editModal.hide();
+                fetchConferences(); // 목록 새로고침
+            }
+        }
     });
 })();

@@ -57,6 +57,59 @@
             <div id="no-suggestions" class="text-center my-5 d-none">
                 <h4>No pending suggestions.</h4>
             </div>
+
+            <hr class="my-5">
+
+            <h1 class="mb-4">Manage Existing Conferences</h1>
+            <div id="conference-list" class="d-flex flex-column gap-3">
+            </div>
+            <div id="no-conferences" class="text-center my-5 d-none">
+                <h4>No conferences found.</h4>
+            </div>
+
+            <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="editModalLabel">Edit Conference</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editForm">
+                                <input type="hidden" id="editConfId">
+
+                                <div class="mb-3">
+                                    <label for="editConfName" class="form-label">Conference Name</label>
+                                    <input type="text" class="form-control" id="editConfName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editConfUrl" class="form-label">Official Website URL</label>
+                                    <input type="url" class="form-control" id="editConfUrl" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editConfLocation" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="editConfLocation">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editConfStartDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="editConfStartDate">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="editConfEndDate" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="editConfEndDate">
+                                    </div>
+                                </div>
+                                <div class="modal-footer pb-0">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </main>
