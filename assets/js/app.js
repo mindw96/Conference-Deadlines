@@ -679,6 +679,31 @@
         const addSubfieldBtn = QS('#addSubfieldBtn');
         const suggestModal = QS('#suggestModal');
         const suggestionForm = QS("#suggestionForm");
+        const suggestionDeadlinesContainer = QS('#suggestionDeadlinesContainer');
+        const addSuggestionDeadlineBtn = QS('#addSuggestionDeadlineBtn');
+
+        const addSuggestionDeadlineInput = () => {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)">
+                <input type="datetime-local" class="form-control suggestion-deadline-due">
+                <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
+            `;
+            suggestionDeadlinesContainer.appendChild(div);
+        };
+
+        if (addSuggestionDeadlineBtn) {
+            addSuggestionDeadlineBtn.addEventListener('click', addSuggestionDeadlineInput);
+        }
+
+        if (suggestionDeadlinesContainer) {
+            suggestionDeadlinesContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-suggestion-deadline-btn')) {
+                    event.target.closest('.input-group').remove();
+                }
+            });
+        }
 
         // Function to add a new subfield input field
         const addSubfieldInput = () => {
@@ -737,11 +762,27 @@
                     .map(input => input.value.trim())
                     .filter(value => value); // Filter out empty strings
 
+                const deadlines = [];
+                suggestionDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
+                    const type = group.querySelector('.suggestion-deadline-type').value.trim();
+                    const due = group.querySelector('.suggestion-deadline-due').value;
+                    if (type && due) {
+                        deadlines.push({
+                            type: type,
+                            due: new Date(due).toISOString()
+                        });
+                    }
+                });
+
                 const suggestion = {
-                    name: QS("#confName").value, site_url: QS("#confUrl").value, location: QS("#confLocation").value,
-                    conf_start_date: QS("#confStartDate").value || null, conf_end_date: QS("#confEndDate").value || null,
-                    deadline_date: QS("#confDeadline").value ? new Date(QS("#confDeadline").value).toISOString() : null,
-                    category: QS("#category").value, subfields: subfieldValues.join(', ')
+                    name: QS("#confName").value,
+                    site_url: QS("#confUrl").value,
+                    location: QS("#confLocation").value,
+                    conf_start_date: QS("#confStartDate").value || null,
+                    conf_end_date: QS("#confEndDate").value || null,
+                    category: QS("#category").value,
+                    subfields: subfieldValues.join(', '),
+                    deadlines: deadlines // <<< deadlines 배열을 JSONB 컬럼에 저장
                 };
 
                 submitButton.disabled = true;

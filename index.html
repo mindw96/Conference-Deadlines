@@ -162,9 +162,17 @@
                             <button type="button" id="addSubfieldBtn" class="btn btn-sm btn-outline-secondary mt-1">Add
                                 Subfield</button>
                         </div>
-                        <div class="mb-3">
-                            <label for="confDeadline" class="form-label">Primary Deadline (AOE Time)</label>
-                            <input type="datetime-local" class="form-control" id="confDeadline">
+                        <div class="mb-3 p-3 border rounded">
+                            <label class="form-label">Deadlines (AOE Time)</label>
+                            <div id="suggestionDeadlinesContainer">
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control suggestion-deadline-type"
+                                        placeholder="Type (e.g., Abstract)" required>
+                                    <input type="datetime-local" class="form-control suggestion-deadline-due" required>
+                                </div>
+                            </div>
+                            <button type="button" id="addSuggestionDeadlineBtn"
+                                class="btn btn-sm btn-outline-secondary mt-1">Add Deadline</button>
                         </div>
                         <div class="mb-3">
                             <label for="confUrl" class="form-label">Official Website URL <span
