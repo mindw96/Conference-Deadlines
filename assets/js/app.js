@@ -267,6 +267,7 @@
         const hasDeadlines = Array.isArray(item.deadlines) && item.deadlines.length > 0;
 
         const conferenceEvent = {
+            id: `${item.id}-conference`,
             title: item.name,
             start: item.dates?.conf_start,
             end: item.dates?.conf_end,
@@ -276,29 +277,44 @@
 
         const deadlineLinksHTML = item.deadlines.map(deadline => {
             const deadlineEvent = {
+                id: `${item.id}-deadline-${index}`, // 고유 ID
                 title: `${item.name}: ${deadline.type}`,
-                start: deadline.due, // 마감일은 시작과 종료가 같음
+                start: deadline.due,
                 end: deadline.due,
                 location: item.location || '',
                 description: `Type: ${deadline.type}`
             };
             // 각 마감일별 캘린더 링크 생성
-            return `<li><a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank">${deadline.type}</a></li>`;
+            return `
+                    <li>
+                        <a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank" rel="noopener">${deadline.type}</a>
+                    </li>`;
         }).join('');
 
         const addToCalendarHTML =
             `
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Add to Calendar
                     </button>
                     <ul class="dropdown-menu">
                         <li><h6 class="dropdown-header">Conference Schedule</h6></li>
-                        <li><a class="dropdown-item" href="${generateCalendarLink('google', conferenceEvent)}" target="_blank">Google Calendar</a></li>
-                        <li><a class="dropdown-item" href="${generateCalendarLink('outlook', conferenceEvent)}" target="_blank">Outlook Calendar</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><h6 class="dropdown-header">Deadlines</h6></li>
-                        ${deadlineLinksHTML}
+                        <li><a class="dropdown-item" href="${generateCalendarLink('google', conferenceEvent)}" target="_blank" rel="noopener">Google Calendar</a></li>
+                        <li><a class="dropdown-item" href="${generateCalendarLink('outlook', conferenceEvent)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
+                        
+                        <li><a class="dropdown-item ics-download-link" href="#" 
+                            data-event-type="conference" 
+                            data-conf-id="${item.id}">Download ICS (.ics)</a></li>
+                        
+                        ${deadlineLinksHTML ? '<li><hr class="dropdown-divider"></li>' : ''}
+                        ${deadlineLinksHTML ? '<li><h6 class="dropdown-header">Deadlines</h6></li>' : ''}
+                        
+                        ${item.deadlines.map((deadline, index) => `
+                            <li><a class="dropdown-item ics-download-link" href="#"
+                                data-event-type="deadline"
+                                data-conf-id="${item.id}"
+                                data-deadline-index="${index}">${deadline.type} (.ics)</a></li>
+                        `).join('')}
                     </ul>
                 </div>
             `;
@@ -564,8 +580,7 @@
     function generateICSContent(item) {
         const toUTCFormat = (dateStr) => {
             if (!dateStr) return '';
-            const d = new Date(dateStr);
-            return d.toISOString().replace(/-|:|\.\d+/g, '');
+            return new Date(dateStr).toISOString().replace(/-|:|\.\d+/g, '');
         };
 
         const startDate = toUTCFormat(item.dates?.conf_start);
@@ -579,13 +594,13 @@
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'BEGIN:VEVENT',
-            `UID:${item.id}@aideadlines.info`,
+            `UID:${eventDetails.id}@alldeadlines.info`,
             `DTSTAMP:${toUTCFormat(new Date().toISOString())}`,
             `DTSTART:${startDate}`,
             `DTEND:${endDate}`,
-            `SUMMARY:${title}`,
-            `DESCRIPTION:${description}`,
-            `LOCATION:${location}`,
+            `SUMMARY:${eventDetails.title}`,
+            `DESCRIPTION:${eventDetails.description.replace(/\n/g, '\\n')}`,
+            `LOCATION:${eventDetails.location}`,
             'END:VEVENT',
             'END:VCALENDAR'
         ].join('\n');
@@ -595,14 +610,16 @@
      * Triggers the download of a dynamically generated .ics file.
      * @param {object} item - The conference object.
      */
-    function downloadICSFile(item) {
-        const icsContent = generateICSContent(item);
+    function downloadICSFile(eventDetails) {
+        const icsContent = generateICSContent(eventDetails);
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
         const url = URL.createObjectURL(blob);
 
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `${item.id}.ics`);
+        // 파일 이름에 특수문자 제거
+        const safeFileName = eventDetails.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        link.setAttribute('download', `${safeFileName}.ics`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -628,13 +645,48 @@
         // .ics download link event listener
         const cardsContainer = QS("#cards");
         cardsContainer.addEventListener('click', (event) => {
-            if (event.target.classList.contains('ics-download-link')) {
-                event.preventDefault();
-                const confId = event.target.getAttribute('data-conf-id');
-                const item = state.items.find(conf => conf.id === confId);
-                if (item) {
-                    downloadICSFile(item);
-                }
+            if (!event.target.classList.contains('ics-download-link')) {
+                return;
+            }
+            event.preventDefault();
+
+            const link = event.target;
+            const confId = link.getAttribute('data-conf-id');
+            const eventType = link.getAttribute('data-event-type');
+            const item = state.items.find(conf => conf.id === confId);
+
+            if (!item) return;
+
+            let eventDetails;
+
+            if (eventType === 'conference') {
+                // '학회 기간' ICS 파일 생성
+                eventDetails = {
+                    id: `${item.id}-conference`,
+                    title: item.name,
+                    start: item.dates?.conf_start,
+                    end: item.dates?.conf_end,
+                    location: item.location || '',
+                    description: `Conference Website: ${item.site || 'N/A'}`
+                };
+            } else if (eventType === 'deadline') {
+                // '개별 마감일' ICS 파일 생성
+                const deadlineIndex = parseInt(link.getAttribute('data-deadline-index'), 10);
+                const deadline = item.deadlines[deadlineIndex];
+                if (!deadline) return;
+
+                eventDetails = {
+                    id: `${item.id}-deadline-${deadlineIndex}`,
+                    title: `${item.name}: ${deadline.type}`,
+                    start: deadline.due,
+                    end: deadline.due,
+                    location: item.location || '',
+                    description: `Type: ${deadline.type}`
+                };
+            }
+
+            if (eventDetails) {
+                downloadICSFile(eventDetails);
             }
         });
 
