@@ -1,7 +1,7 @@
 (function () {
     // --- UTILITY FUNCTIONS ---
     const QS = s => document.querySelector(s);
-    
+
     // --- SUPABASE SETUP ---
     // IMPORTANT: Replace with your actual Supabase URL and Anon Key
     const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
@@ -266,6 +266,43 @@
         const note = item.note || "";
         const hasDeadlines = Array.isArray(item.deadlines) && item.deadlines.length > 0;
 
+        const conferenceEvent = {
+            title: item.name,
+            start: item.dates?.conf_start,
+            end: item.dates?.conf_end,
+            location: item.location || '',
+            description: `Conference Website: ${item.site || 'N/A'}`
+        };
+
+        const deadlineLinksHTML = item.deadlines.map(deadline => {
+            const deadlineEvent = {
+                title: `${item.name}: ${deadline.type}`,
+                start: deadline.due, // 마감일은 시작과 종료가 같음
+                end: deadline.due,
+                location: item.location || '',
+                description: `Type: ${deadline.type}`
+            };
+            // 각 마감일별 캘린더 링크 생성
+            return `<li><a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank">${deadline.type}</a></li>`;
+        }).join('');
+
+        const addToCalendarHTML =
+            `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Add to Calendar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Conference Schedule</h6></li>
+                        <li><a class="dropdown-item" href="${generateCalendarLink('google', conferenceEvent)}" target="_blank">Google Calendar</a></li>
+                        <li><a class="dropdown-item" href="${generateCalendarLink('outlook', conferenceEvent)}" target="_blank">Outlook Calendar</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Deadlines</h6></li>
+                        ${deadlineLinksHTML}
+                    </ul>
+                </div>
+            `;
+
         const deadRows = hasDeadlines
             ? item.deadlines.map(d => `
                 <div>
@@ -302,16 +339,7 @@
                     </div>
                     <div class="d-flex gap-2">
                         ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Add to Calendar
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="${generateCalendarLink('google', item)}" target="_blank" rel="noopener">Google Calendar</a></li>
-                                <li><a class="dropdown-item" href="${generateCalendarLink('outlook', item)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
-                                <li><a class="dropdown-item ics-download-link" href="#" data-conf-id="${item.id}">Download ICS (.ics)</a></li>
-                            </ul>
-                        </div>
+                        ${addToCalendarHTML}
                     </div>
                 </article>`;
     }
