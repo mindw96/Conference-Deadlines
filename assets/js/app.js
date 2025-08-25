@@ -264,7 +264,6 @@
         const name = item.name || "";
         const url = item.site || "#";
         const note = item.note || "";
-        const hasDeadlines = Array.isArray(item.deadlines) && item.deadlines.length > 0;
 
         const conferenceEvent = {
             id: `${item.id}-conference`,
@@ -275,20 +274,26 @@
             description: `Conference Website: ${item.site || 'N/A'}`
         };
 
-        const deadlineLinksHTML = item.deadlines.map((deadline, index) => {
+        const deadlineMenuItemsHTML = item.deadlines.map((deadline, index) => {
             const deadlineEvent = {
-                id: `${item.id}-deadline-${index}`, // 고유 ID
+                id: `${item.id}-deadline-${index}`,
                 title: `${item.name}: ${deadline.type}`,
                 start: deadline.due,
                 end: deadline.due,
                 location: item.location || '',
                 description: `Type: ${deadline.type}`
             };
-            // 각 마감일별 캘린더 링크 생성
+
+            // 각 마감일별로 제목 + 3가지 캘린더 링크를 그룹으로 묶어 생성
             return `
-                    <li>
-                        <a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank" rel="noopener">${deadline.type}</a>
-                    </li>`;
+            <li><h6 class="dropdown-header ps-3 text-body-secondary">${deadline.type}</h6></li>
+            <li><a class="dropdown-item" href="${generateCalendarLink('google', deadlineEvent)}" target="_blank" rel="noopener">Google Calendar</a></li>
+            <li><a class="dropdown-item" href="${generateCalendarLink('outlook', deadlineEvent)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
+            <li><a class="dropdown-item ics-download-link" href="#"
+                   data-event-type="deadline"
+                   data-conf-id="${item.id}"
+                   data-deadline-index="${index}">Download ICS (.ics)</a></li>
+        `;
         }).join('');
 
         const addToCalendarHTML =
@@ -301,61 +306,47 @@
                         <li><h6 class="dropdown-header">Conference Schedule</h6></li>
                         <li><a class="dropdown-item" href="${generateCalendarLink('google', conferenceEvent)}" target="_blank" rel="noopener">Google Calendar</a></li>
                         <li><a class="dropdown-item" href="${generateCalendarLink('outlook', conferenceEvent)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
-                        
-                        <li><a class="dropdown-item ics-download-link" href="#" 
-                            data-event-type="conference" 
+                        <li><a class="dropdown-item ics-download-link" href="#"
+                            data-event-type="conference"
                             data-conf-id="${item.id}">Download ICS (.ics)</a></li>
                         
-                        ${deadlineLinksHTML ? '<li><hr class="dropdown-divider"></li>' : ''}
-                        ${deadlineLinksHTML ? '<li><h6 class="dropdown-header">Deadlines</h6></li>' : ''}
+                        ${deadlineMenuItemsHTML ? '<li><hr class="dropdown-divider"></li>' : ''}
                         
-                        ${item.deadlines.map((deadline, index) => `
-                            <li><a class="dropdown-item ics-download-link" href="#"
-                                data-event-type="deadline"
-                                data-conf-id="${item.id}"
-                                data-deadline-index="${index}">${deadline.type} (.ics)</a></li>
-                        `).join('')}
+                        ${deadlineMenuItemsHTML}
                     </ul>
                 </div>
             `;
 
-        const deadRows = hasDeadlines
-            ? item.deadlines.map(d => `
-                <div>
-                  <span class="small">
-                    <strong>${d.type}:</strong> ${formatDateAOE(d.due)}
-                  </span>
-                </div>
-              `).join("")
-            : `<span class="small text-body">Coming Soon!</span>`;
+
 
         const dBadgeHTML = dBadge(item);
-        const countdownHTML = item.nextDue
-            ? `<div class="js-countdown small mt-1" data-deadline="${item.nextDue.toISOString()}">--:--:--</div>`
-            : "";
+        const countdownHTML = item.nextDue ? `<div class="js-countdown small mt-1" data-deadline="${item.nextDue.toISOString()}">--:--:--</div>` : "";
 
+        // 4. 최종 카드 HTML 반환
         return `
                 <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h5 class="card-title mb-1">${name}</h5>
-                            <div class="text-muted small">${item.location || ""}</div>
-                            <div class="text-muted small">${item.dates?.conf_start}~${item.dates?.conf_end}</div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title mb-1">${name}</h5>
+                                <div class="text-muted small">${item.location || ""}</div>
+                                <div class="text-muted small">${item.dates?.conf_start || ''} ~ ${item.dates?.conf_end || ''}</div>
+                            </div>
+                            <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
                         </div>
-                        <div class="text-end">${dBadgeHTML}${countdownHTML}</div>
-                    </div>
-                    <div class="mb-2 tag-list">
-                        ${renderAreaBadges(item.areas)}
-                        ${renderTagChips(item.tags)}
-                    </div>
-                    ${note ? `<p class="small mb-2">${note}</p>` : ""}
-                    <div class="list-group list-group-flush mb-2">
-                        ${deadRows}
-                    </div>
-                    <div class="d-flex gap-2">
-                        ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                        ${addToCalendarHTML}
+                        <div class="mb-2 tag-list">
+                            ${renderAreaBadges(item.areas)}
+                            ${renderTagChips(item.tags)}
+                        </div>
+                        <div class="list-group list-group-flush mb-2">
+                            ${item.deadlines.map(d => `
+                                <div><span class="small"><strong>${d.type}:</strong> ${formatDateAOE(d.due)}</span></div>
+                            `).join("") || `<span class="small text-body-secondary">Deadlines Coming Soon!</span>`}
+                        </div>
+                        <div class="d-flex gap-2">
+                            ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
+                            ${addToCalendarHTML}
+                        </div>
                     </div>
                 </article>`;
     }
