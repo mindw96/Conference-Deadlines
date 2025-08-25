@@ -529,13 +529,12 @@
     }
 
     /**
-     * Generates a calendar link for Google or Outlook.
+     * Generates a calendar link for Google or Outlook based on event details.
      * @param {string} type - 'google' or 'outlook'.
-     * @param {object} item - The conference object.
+     * @param {object} eventDetails - An object with event properties.
      * @returns {string} The generated calendar link.
      */
-    function generateCalendarLink(type, item) {
-        // 날짜 형식을 YYYYMMDDTHHMMSSZ (UTC) 형태로 변환
+    function generateCalendarLink(type, eventDetails) {
         const toUTCFormat = (dateStr) => {
             if (!dateStr) return '';
             const d = new Date(dateStr);
@@ -544,43 +543,37 @@
             return d.toISOString().replace(/-|:|\.\d+/g, '');
         };
 
-        const title = encodeURIComponent(item.name);
-        const startTime = toUTCFormat(item.dates?.conf_start);
-        const endTime = toUTCFormat(item.dates?.conf_end);
-        const location = encodeURIComponent(item.location || '');
-        const details = encodeURIComponent(`Conference Website: ${item.site || 'N/A'}`);
+        const title = encodeURIComponent(eventDetails.title);
+        const startTime = toUTCFormat(eventDetails.start);
+        const endTime = toUTCFormat(eventDetails.end);
+        const location = encodeURIComponent(eventDetails.location || '');
+        const details = encodeURIComponent(eventDetails.description);
 
         if (type === 'google') {
-            // Google Calendar URL 형식
             return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&location=${location}&details=${details}`;
         }
 
         if (type === 'outlook') {
-            // Outlook Calendar URL 형식
             return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
         }
 
-        return '#'; // 기본값
+        return '#';
     }
 
     /**
      * Generates the content for a universal .ics calendar file.
-     * @param {object} item - The conference object.
+     * @param {object} eventDetails - An object with event properties.
      * @returns {string} The content of the .ics file.
      */
-    function generateICSContent(item) {
+    function generateICSContent(eventDetails) {
         const toUTCFormat = (dateStr) => {
             if (!dateStr) return '';
             return new Date(dateStr).toISOString().replace(/-|:|\.\d+/g, '');
         };
 
-        const startDate = toUTCFormat(item.dates?.conf_start);
-        const endDate = toUTCFormat(item.dates?.conf_end);
-        const title = item.name;
-        const location = item.location || '';
-        const description = `Conference Website: ${item.site || 'N/A'}`;
+        const startDate = toUTCFormat(eventDetails.start);
+        const endDate = toUTCFormat(eventDetails.end);
 
-        // iCalendar (ICS) file format
         return [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
