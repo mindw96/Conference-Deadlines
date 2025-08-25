@@ -274,6 +274,21 @@
             description: `Conference Website: ${item.site || 'N/A'}`
         };
 
+        let nextDeadlineHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
+
+        if (item.nextDue) {
+            const nextDeadlineDetails = item.deadlines.find(d => d.due.getTime() === item.nextDue.getTime());
+            const deadlineType = nextDeadlineDetails ? nextDeadlineDetails.type : 'Next Deadline';
+
+            nextDeadlineHTML = `
+                                <div>
+                                    <span class="small">
+                                        <strong>${deadlineType}:</strong> ${formatDateAOE(item.nextDue)}
+                                    </span>
+                                </div>
+                            `;
+        }
+
         const deadlineMenuItemsHTML = item.deadlines.map((deadline, index) => {
             const deadlineEvent = {
                 id: `${item.id}-deadline-${index}`,
@@ -339,9 +354,7 @@
                             ${renderTagChips(item.tags)}
                         </div>
                         <div class="list-group list-group-flush mb-2">
-                            ${item.deadlines.map(d => `
-                                <div><span class="small"><strong>${d.type}:</strong> ${formatDateAOE(d.due)}</span></div>
-                            `).join("") || `<span class="small text-body-secondary">Deadlines Coming Soon!</span>`}
+                            ${nextDeadlineHTML} 
                         </div>
                         <div class="d-flex gap-2">
                             ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
