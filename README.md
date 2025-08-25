@@ -5,7 +5,7 @@
 
 An open-source project to track and manage academic conference deadlines, built with a serverless backend.
 
-Live Site → [aideadlines.info](https://alldeadlines.info{target=_blank})
+Live Site → [alldeadlines.info](https://alldeadlines.info{target=_blank})
 
 ---
 
