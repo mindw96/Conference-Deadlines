@@ -88,8 +88,9 @@
 
         <section class="text-muted small my-4">
             <p class="mb-1">
-                <span class="ms-2"></span>Didn't find the conference you were looking for?</span>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#suggestModal">
+                <span class="ms-2">Didn't find the conference you were looking for?</span>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#suggestModal">
                     Request to add a Conference
                 </button>
             </p>
@@ -127,7 +128,8 @@
                 <div class="modal-body">
                     <form id="suggestionForm">
                         <div class="mb-3">
-                            <label for="confName" class="form-label">Conference Name <span class="text-danger">*</span></label>
+                            <label for="confName" class="form-label">Conference Name <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="confName" required>
                         </div>
                         <div class="mb-3">
@@ -146,24 +148,29 @@
                         </div>
                         <div class="mb-3">
                             <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="category" placeholder="AI, CS, Science" required>
+                            <input type="text" class="form-control" id="category" placeholder="AI, CS, Science"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Subfields <span class="text-danger">*</span></label>
                             <div id="subfieldsContainer">
                                 <div class="input-group mb-2">
-                                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
+                                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..."
+                                        required>
                                 </div>
                             </div>
-                            <button type="button" id="addSubfieldBtn" class="btn btn-sm btn-outline-secondary mt-1">Add Subfield</button>
+                            <button type="button" id="addSubfieldBtn" class="btn btn-sm btn-outline-secondary mt-1">Add
+                                Subfield</button>
                         </div>
                         <div class="mb-3">
                             <label for="confDeadline" class="form-label">Primary Deadline (AOE Time)</label>
                             <input type="datetime-local" class="form-control" id="confDeadline">
                         </div>
                         <div class="mb-3">
-                            <label for="confUrl" class="form-label">Official Website URL <span class="text-danger">*</span></label>
-                            <input type="url" class="form-control" id="confUrl" placeholder="https://example.com" required>
+                            <label for="confUrl" class="form-label">Official Website URL <span
+                                    class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="confUrl" placeholder="https://example.com"
+                                required>
                         </div>
                         <div id="suggestionAlert" class="d-none"></div>
                         <div class="modal-footer pb-0">

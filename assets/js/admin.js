@@ -16,27 +16,51 @@
     const conferenceListDiv = QS('#conference-list');
     const noConferencesDiv = QS('#no-conferences');
     const editModalEl = QS('#editModal');
-    const editModal = new bootstrap.Modal(editModalEl); // 모달 인스턴스 생성
+    const editModal = new bootstrap.Modal(editModalEl);
+    const deadlinesContainer = QS('#editDeadlinesContainer');
+    const areasContainer = QS('#editAreasContainer');
+    let toastInstance = null;
 
-    let toastInstance = null; // To hold the Bootstrap Toast instance
+    // --- HELPER FUNCTIONS for Edit Modal ---
 
+    function addAreaInput(category = '', subfields = '') {
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2 area-group';
+        div.innerHTML = `
+            <input type="text" class="form-control area-category" placeholder="Category (e.g., AI)" value="${category}">
+            <input type="text" class="form-control area-subfields" placeholder="Subfields (comma separated)" value="${subfields}">
+            <button class="btn btn-outline-danger remove-area-btn" type="button">&times;</button>
+        `;
+        areasContainer.appendChild(div);
+    }
+
+    function addDeadlineInput(type = '', date = '') {
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2 deadline-group';
+        const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
+        div.innerHTML = `
+            <input type="text" class="form-control deadline-type" placeholder="Deadline Type" value="${type}">
+            <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
+            <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
+        `;
+        deadlinesContainer.appendChild(div);
+    }
 
     // --- AUTH FUNCTIONS ---
     async function handleLogin(event) {
         event.preventDefault();
-        const form = event.target; // event.target은 submit 이벤트가 발생한 form 요소를 가리킵니다.
-        const email = form.elements.email.value; // form 안에서 id가 'email'인 요소의 값을 찾습니다.
-        const password = form.elements.password.value; // form 안에서 id가 'password'인 요소의 값을 찾습니다.
-
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const form = event.target;
+        const email = form.elements.email.value;
+        const password = form.elements.password.value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            // Show error in a toast notification
             if (toastInstance) {
                 const toastBody = QS('#errorToast .toast-body');
                 toastBody.textContent = error.message;
                 toastInstance.show();
+            } else {
+                alert(error.message);
             }
         } else {
             checkUserSession();
@@ -50,26 +74,17 @@
 
     // --- DATA FUNCTIONS ---
     async function fetchSuggestions() {
-        const { data, error } = await supabase
-            .from('conference_suggestions')
-            .select('*')
-            .order('created_at', { ascending: true });
-
+        const { data, error } = await supabase.from('conference_suggestions').select('*').order('created_at', { ascending: true });
         if (error) {
             console.error('Error fetching suggestions:', error);
             suggestionsList.innerHTML = `<div class="alert alert-danger">Failed to load suggestions.</div>`;
             return;
         }
-
         renderSuggestions(data);
     }
 
     async function fetchConferences() {
-        const { data, error } = await supabase
-            .from('conferences')
-            .select('*')
-            .order('name', { ascending: true });
-
+        const { data, error } = await supabase.from('conferences').select('*').order('name', { ascending: true });
         if (error) {
             console.error('Error fetching conferences:', error);
             conferenceListDiv.innerHTML = `<div class="alert alert-danger">Failed to load conferences.</div>`;
@@ -84,7 +99,6 @@
             suggestionsList.innerHTML = '';
             return;
         }
-
         noSuggestionsDiv.classList.add('d-none');
         suggestionsList.innerHTML = suggestions.map(s => `
             <div class="card" data-id="${s.id}">
@@ -109,24 +123,23 @@
             conferenceListDiv.innerHTML = '';
             return;
         }
-
         noConferencesDiv.classList.add('d-none');
         conferenceListDiv.innerHTML = conferences.map(conf => `
-        <div class="card" data-id="${conf.id}">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title mb-1">${conf.name}</h5>
-                        <p class="card-text text-muted small">${conf.location || 'Location not set'}</p>
-                    </div>
-                    <div class="d-flex gap-2 align-items-start">
-                        <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
-                        <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
+            <div class="card" data-id="${conf.id}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-1">${conf.name}</h5>
+                            <p class="card-text text-muted small">${conf.location || 'Location not set'}</p>
+                        </div>
+                        <div class="d-flex gap-2 align-items-start">
+                            <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
+                            <button class="btn btn-outline-danger btn-sm delete-btn">Delete</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
     }
 
     async function handleSuggestionAction(event) {
@@ -146,17 +159,13 @@
                 card.remove();
             }
         } else if (button.matches('.approve-btn')) {
-            // 1. Get the full suggestion data
-            const { data: suggestionData, error: fetchError } = await supabase
-                .from('conference_suggestions').select('*').eq('id', suggestionId).single();
-
+            const { data: suggestionData, error: fetchError } = await supabase.from('conference_suggestions').select('*').eq('id', suggestionId).single();
             if (fetchError) {
                 alert(`Could not fetch suggestion details: ${fetchError.message}`);
                 button.disabled = false;
                 return;
             }
 
-            // 2. Prepare data for the main 'conferences' table
             const newConference = {
                 id: suggestionData.name.toLowerCase().replace(/\s+/g, '-') + '-' + new Date(suggestionData.conf_start_date).getFullYear(),
                 name: suggestionData.name,
@@ -164,12 +173,9 @@
                 conf_end_date: suggestionData.conf_end_date,
                 location: suggestionData.location,
                 site_url: suggestionData.site_url,
-                // For simplicity, we leave areas and tags empty for the admin to fill later if needed
-                areas: {},
-                tags: [],
+                areas: {}, tags: [],
             };
 
-            // 3. Insert into 'conferences' table
             const { error: confError } = await supabase.from('conferences').insert([newConference]);
             if (confError) {
                 alert(`Error inserting into conferences: ${confError.message}`);
@@ -177,7 +183,6 @@
                 return;
             }
 
-            // 4. Insert into 'deadlines' table if a deadline exists
             if (suggestionData.deadline_date) {
                 const newDeadline = {
                     conference_id: newConference.id,
@@ -187,17 +192,106 @@
                 const { error: deadlineError } = await supabase.from('deadlines').insert([newDeadline]);
                 if (deadlineError) {
                     alert(`Conference was added, but deadline failed: ${deadlineError.message}`);
-                    // Don't re-enable button, as part of the action succeeded.
                 }
             }
 
-            // 5. Delete the original suggestion
             await supabase.from('conference_suggestions').delete().eq('id', suggestionId);
             card.remove();
+            fetchConferences(); // Refresh conference list
         }
     }
 
-    // --- INITIALIZATION ---
+    async function handleDelete(id, cardElement) {
+        if (confirm(`Are you sure you want to delete "${id}"? This cannot be undone.`)) {
+            const { error } = await supabase.from('conferences').delete().eq('id', id);
+            if (error) {
+                alert(`Error: ${error.message}`);
+            } else {
+                cardElement.remove();
+                alert('Conference deleted.');
+            }
+        }
+    }
+
+    async function handleEdit(id) {
+        const { data, error } = await supabase.from('conferences').select('*, deadlines(*)').eq('id', id).single();
+        if (error) {
+            alert(`Error fetching details: ${error.message}`);
+            return;
+        }
+
+        QS('#editConfId').value = data.id;
+        QS('#editConfName').value = data.name;
+        QS('#editConfUrl').value = data.site_url;
+        QS('#editConfLocation').value = data.location;
+        QS('#editConfStartDate').value = data.conf_start_date;
+        QS('#editConfEndDate').value = data.conf_end_date;
+
+        areasContainer.innerHTML = '';
+        if (data.areas) {
+            for (const category in data.areas) {
+                addAreaInput(category, data.areas[category].join(', '));
+            }
+        }
+
+        deadlinesContainer.innerHTML = '';
+        if (data.deadlines && data.deadlines.length > 0) {
+            data.deadlines.forEach(d => addDeadlineInput(d.deadline_type, d.due_date));
+        }
+
+        editModal.show();
+    }
+
+    async function handleUpdate(event) {
+        event.preventDefault();
+        const id = QS('#editConfId').value;
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+
+        const newAreas = {};
+        areasContainer.querySelectorAll('.area-group').forEach(group => {
+            const category = group.querySelector('.area-category').value.trim();
+            const subfields = group.querySelector('.area-subfields').value.trim().split(',').map(s => s.trim()).filter(Boolean);
+            if (category) {
+                newAreas[category] = subfields;
+            }
+        });
+
+        const updatedConferenceData = {
+            name: QS('#editConfName').value,
+            site_url: QS('#editConfUrl').value,
+            location: QS('#editConfLocation').value,
+            conf_start_date: QS('#editConfStartDate').value || null,
+            conf_end_date: QS('#editConfEndDate').value || null,
+            areas: newAreas,
+        };
+
+        const newDeadlines = [];
+        deadlinesContainer.querySelectorAll('.deadline-group').forEach(group => {
+            const type = group.querySelector('.deadline-type').value.trim();
+            const date = group.querySelector('.deadline-date').value;
+            if (type && date) {
+                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: new Date(date).toISOString() });
+            }
+        });
+
+        const { error: confError } = await supabase.from('conferences').update(updatedConferenceData).eq('id', id);
+        if (confError) { alert(`Conference update failed: ${confError.message}`); submitButton.disabled = false; return; }
+
+        const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', id);
+        if (deleteError) { alert(`Clearing old deadlines failed: ${deleteError.message}`); submitButton.disabled = false; return; }
+
+        if (newDeadlines.length > 0) {
+            const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
+            if (insertError) { alert(`Inserting new deadlines failed: ${insertError.message}`); submitButton.disabled = false; return; }
+        }
+
+        alert('Conference updated successfully!');
+        editModal.hide();
+        fetchConferences();
+        submitButton.disabled = false;
+    }
+
     async function checkUserSession() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
@@ -211,94 +305,42 @@
             loginView.classList.remove('d-none');
             adminView.classList.add('d-none');
             authControls.classList.add('d-none');
+            userEmailSpan.textContent = '';
         }
     }
 
+    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
-        QS('#login-form').addEventListener('submit', handleLogin);
-        QS('#logout-button').addEventListener('click', handleLogout);
-        suggestionsList.addEventListener('click', handleSuggestionAction);
-
-        // Initialize the toast instance
         const errorToastEl = QS('#errorToast');
         if (errorToastEl) {
             toastInstance = new bootstrap.Toast(errorToastEl);
         }
 
-        checkUserSession();
+        QS('#login-form').addEventListener('submit', handleLogin);
+        QS('#logout-button').addEventListener('click', handleLogout);
+        suggestionsList.addEventListener('click', handleSuggestionAction);
 
         conferenceListDiv.addEventListener('click', (event) => {
-            const target = event.target;
-            const card = target.closest('.card');
+            const card = event.target.closest('.card');
             if (!card) return;
-
             const confId = card.dataset.id;
-
-            if (target.classList.contains('delete-btn')) {
-                handleDelete(confId, card);
-            } else if (target.classList.contains('edit-btn')) {
-                handleEdit(confId);
-            }
+            if (event.target.matches('.delete-btn')) handleDelete(confId, card);
+            if (event.target.matches('.edit-btn')) handleEdit(confId);
         });
 
         QS('#editForm').addEventListener('submit', handleUpdate);
 
-        async function handleDelete(id, cardElement) {
-            if (confirm(`Are you sure you want to delete the conference "${id}"? This action cannot be undone.`)) {
-                const { error } = await supabase.from('conferences').delete().eq('id', id);
-                if (error) {
-                    alert(`Error deleting conference: ${error.message}`);
-                } else {
-                    cardElement.remove();
-                    alert('Conference deleted successfully.');
-                }
-            }
-        }
+        QS('#addAreaBtn').addEventListener('click', () => addAreaInput());
+        areasContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.remove-area-btn')) e.target.closest('.area-group').remove();
+        });
 
-        async function handleEdit(id) {
-            // 특정 학회 정보 가져오기
-            const { data, error } = await supabase.from('conferences').select('*').eq('id', id).single();
+        QS('#addDeadlineBtn').addEventListener('click', () => addDeadlineInput());
+        deadlinesContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.remove-deadline-btn')) e.target.closest('.deadline-group').remove();
+        });
 
-            if (error) {
-                alert(`Could not fetch conference details: ${error.message}`);
-                return;
-            }
-
-            // 모달 폼에 데이터 채우기
-            QS('#editConfId').value = data.id;
-            QS('#editConfName').value = data.name;
-            QS('#editConfUrl').value = data.site_url;
-            QS('#editConfLocation').value = data.location;
-            QS('#editConfStartDate').value = data.conf_start_date;
-            QS('#editConfEndDate').value = data.conf_end_date;
-
-            // 모달 띄우기
-            editModal.show();
-        }
-
-        async function handleUpdate(event) {
-            event.preventDefault();
-            const id = QS('#editConfId').value;
-
-            // 폼에서 수정된 데이터 가져오기
-            const updatedData = {
-                name: QS('#editConfName').value,
-                site_url: QS('#editConfUrl').value,
-                location: QS('#editConfLocation').value,
-                conf_start_date: QS('#editConfStartDate').value || null,
-                conf_end_date: QS('#editConfEndDate').value || null,
-            };
-
-            // Supabase에 업데이트 요청
-            const { error } = await supabase.from('conferences').update(updatedData).eq('id', id);
-
-            if (error) {
-                alert(`Error updating conference: ${error.message}`);
-            } else {
-                alert('Conference updated successfully!');
-                editModal.hide();
-                fetchConferences(); // 목록 새로고침
-            }
-        }
+        checkUserSession();
     });
+
 })();
