@@ -274,6 +274,8 @@
             description: `Conference Website: ${item.site || 'N/A'}`
         };
 
+        const now = new Date();
+
         let nextDeadlineHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
 
         if (item.nextDue) {
@@ -289,7 +291,7 @@
                             `;
         }
 
-        const deadlineMenuItemsHTML = item.deadlines.map((deadline, index) => {
+        const deadlineMenuItemsHTML = item.deadlines.filter(deadline => deadline.due > now).map((deadline, index) => {
             const deadlineEvent = {
                 id: `${item.id}-deadline-${index}`,
                 title: `${item.name}: ${deadline.type}`,
