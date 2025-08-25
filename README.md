@@ -9,7 +9,7 @@ Live Site → [aideadlines.info](https://alldeadlines.info{target=_blank})
 
 ---
 
-![Conference Deadlines Screenshot](assets\image.png)
+![Conference Deadlines Screenshot](assets/image.png)
 
 ## Features
 
