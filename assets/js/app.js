@@ -946,12 +946,14 @@
                 if (type && due) deadlines.push({ type, due: new Date(due).toISOString() });
             });
 
-            const areas = {};
-            suggestEditAreasContainer.querySelectorAll('.input-group').forEach(group => {
-                const category = group.querySelector('.area-category').value.trim();
-                const subfields = group.querySelector('.area-subfields').value.trim().split(',').map(s => s.trim()).filter(Boolean);
-                if (category) areas[category] = subfields;
-            });
+            let suggestionCategory = '';
+            let suggestionSubfields = '';
+
+            const firstAreaGroup = suggestEditAreasContainer.querySelector('.input-group');
+            if (firstAreaGroup) {
+                suggestionCategory = firstAreaGroup.querySelector('.area-category').value.trim();
+                suggestionSubfields = firstAreaGroup.querySelector('.area-subfields').value.trim();
+            }
 
             const finalSuggestion = {
                 name: QS('#suggestEditConfName').value,
@@ -960,7 +962,8 @@
                 conf_start_date: QS('#suggestEditConfStartDate').value || null,
                 conf_end_date: QS('#suggestEditConfEndDate').value || null,
                 deadlines: deadlines,
-                areas: areas,
+                category: suggestionCategory,   // 'areas' 대신 'category' 사용
+                subfields: suggestionSubfields, // 'areas' 대신 'subfields' 사용
                 is_edit: true,
                 target_conference_id: targetId,
             };
