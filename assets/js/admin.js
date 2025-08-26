@@ -72,17 +72,6 @@
         checkUserSession();
     }
 
-    // --- DATA FUNCTIONS ---
-    async function fetchSuggestions() {
-        const { data, error } = await supabase.from('conference_suggestions').select('*').order('created_at', { ascending: true });
-        if (error) {
-            console.error('Error fetching suggestions:', error);
-            suggestionsList.innerHTML = `<div class="alert alert-danger">Failed to load suggestions.</div>`;
-            return;
-        }
-        renderSuggestions(data);
-    }
-
     async function fetchConferences() {
         const { data, error } = await supabase.from('conferences').select('*').order('name', { ascending: true });
         if (error) {
@@ -386,6 +375,7 @@
             adminView.classList.remove('d-none');
             authControls.classList.remove('d-none');
             userEmailSpan.textContent = session.user.email;
+
             try {
                 const [suggestionsResponse, conferencesResponse] = await Promise.all([
                     supabase.from('conference_suggestions').select('*').order('created_at', { ascending: true }),
@@ -398,8 +388,8 @@
                 const suggestions = suggestionsResponse.data || [];
                 const conferences = conferencesResponse.data || [];
 
-                fetchSuggestions(suggestions, conferences);
-                fetchConferences(conferences);
+                renderSuggestions(suggestions, conferences);
+                renderConferences(conferences);
 
             } catch (error) {
                 console.error('Error fetching admin data:', error);
