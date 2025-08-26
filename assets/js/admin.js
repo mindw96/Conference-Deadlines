@@ -398,8 +398,8 @@
                 const suggestions = suggestionsResponse.data || [];
                 const conferences = conferencesResponse.data || [];
 
-                renderSuggestions(suggestions, conferences); // conferences 데이터를 함께 전달
-                renderConferences(conferences);
+                fetchSuggestions();
+                fetchConferences();
 
             } catch (error) {
                 console.error('Error fetching admin data:', error);
