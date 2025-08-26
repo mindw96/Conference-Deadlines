@@ -278,10 +278,6 @@
         const hasDeadlines = item.deadlines && item.deadlines.length > 0;
         const now = new Date();
 
-        let deadlineDisplayHTML;
-        const hasDeadlines = item.deadlines && item.deadlines.length > 0;
-        const now = new Date();
-
         if (!hasDeadlines) {
             // Case 1: 마감일 정보가 아예 없을 경우
             deadlineDisplayHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
