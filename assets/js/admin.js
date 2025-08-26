@@ -196,7 +196,9 @@
                 card.remove();
             }
             return; // Early return
-        } else if (button.matches('.approve-btn')) {
+        }
+
+        if (button.matches('.approve-btn')) {
             // 1. 제안 데이터 가져오기
             const { data: suggestionData, error: fetchError } = await supabase
                 .from('conference_suggestions').select('*').eq('id', suggestionId).single();
@@ -207,17 +209,17 @@
                 return;
             }
 
+            const newAreas = {};
+            if (suggestionData.category) {
+                newAreas[suggestionData.category] = suggestionData.subfields
+                    ? suggestionData.subfields.split(',').map(s => s.trim())
+                    : [];
+            }
+
             // 2. '수정 제안'인지 '신규 제안'인지에 따라 로직 분기
             if (suggestionData.is_edit) {
                 // === UPDATE 로직 (수정 제안 승인) ===
                 const targetId = suggestionData.target_conference_id;
-
-                const newAreas = {};
-                if (suggestionData.category) {
-                    newAreas[suggestionData.category] = suggestionData.subfields
-                        ? suggestionData.subfields.split(',').map(s => s.trim())
-                        : [];
-                }
 
                 const updatedData = {
                     name: suggestionData.name,
@@ -225,7 +227,7 @@
                     location: suggestionData.location,
                     conf_start_date: suggestionData.conf_start_date,
                     conf_end_date: suggestionData.conf_end_date,
-                    areas: suggestionData.areas || {},
+                    areas: newAreas,
                 };
 
                 const { error: confError } = await supabase.from('conferences').update(updatedData).eq('id', targetId);
@@ -252,7 +254,7 @@
                     conf_end_date: suggestionData.conf_end_date,
                     location: suggestionData.location,
                     site_url: suggestionData.site_url,
-                    areas: suggestionData.areas || {},
+                    areas: newAreas,
                     tags: suggestionData.tags || [],
                 };
 
