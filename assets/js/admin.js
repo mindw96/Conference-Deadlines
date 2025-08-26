@@ -398,8 +398,8 @@
                 const suggestions = suggestionsResponse.data || [];
                 const conferences = conferencesResponse.data || [];
 
-                fetchSuggestions();
-                fetchConferences();
+                fetchSuggestions(suggestions, conferences);
+                fetchConferences(conferences);
 
             } catch (error) {
                 console.error('Error fetching admin data:', error);
