@@ -109,18 +109,41 @@
             // Deadlines를 보기 좋게 표시
             const deadlinesText = s.deadlines ? s.deadlines.map(d => `${d.type}: ${new Date(d.due).toLocaleString()}`).join('<br>') : (s.deadline_date ? new Date(s.deadline_date).toLocaleString() : 'N/A');
 
+            let changesHTML = '';
+            if (isEdit && s.target_conference_id) {
+                const original = conferenceMap.get(s.target_conference_id);
+                if (original) {
+                    const changes = compareConferenceData(original, s);
+                    if (changes.length > 0) {
+                        changesHTML = `
+                        <div class="alert alert-warning p-2 mt-2">
+                            <h6 class="alert-heading small">Changes:</h6>
+                            <ul class="list-unstyled mb-0 small">
+                                ${changes.map(change => `<li>${change}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    }
+                }
+            }
+
+            const categoryHTML = s.category ? `<p class="card-text mb-1"><strong>Category:</strong> ${s.category}</p>` : '';
+            const subfieldsHTML = s.subfields ? `<p class="card-text mb-1"><strong>Subfields:</strong> ${s.subfields}</p>` : '';
+
             return `
                 <div class="card" data-id="${s.id}">
                     <div class="card-body">
                         <h5 class="card-title d-flex justify-content-between">
-                            ${s.name}
-                            ${editBadge}
+                            ${s.name} ${editBadge}
                         </h5>
                         ${targetInfo}
                         <p class="card-text mb-1"><strong>URL:</strong> <a href="${s.site_url}" target="_blank" rel="noopener">${s.site_url}</a></p>
                         <p class="card-text mb-1"><strong>Location:</strong> ${s.location || 'N/A'}</p>
                         <p class="card-text mb-1"><strong>Dates:</strong> ${s.conf_start_date || 'N/A'} to ${s.conf_end_date || 'N/A'}</p>
+                        ${categoryHTML}
+                        ${subfieldsHTML}
                         <p class="card-text mb-1"><strong>Deadlines:</strong><br><small>${deadlinesText}</small></p>
+                        ${changesHTML}
                         <div class="mt-3">
                             <button class="btn btn-success btn-sm approve-btn">Approve</button>
                             <button class="btn btn-danger btn-sm reject-btn">Reject</button>
@@ -173,9 +196,7 @@
                 card.remove();
             }
             return; // Early return
-        }
-
-        if (button.matches('.approve-btn')) {
+        } else if (button.matches('.approve-btn')) {
             // 1. 제안 데이터 가져오기
             const { data: suggestionData, error: fetchError } = await supabase
                 .from('conference_suggestions').select('*').eq('id', suggestionId).single();
@@ -190,10 +211,12 @@
             if (suggestionData.is_edit) {
                 // === UPDATE 로직 (수정 제안 승인) ===
                 const targetId = suggestionData.target_conference_id;
-                if (!targetId) {
-                    alert('Error: Target conference ID is missing for this edit suggestion.');
-                    button.disabled = false;
-                    return;
+
+                const newAreas = {};
+                if (suggestionData.category) {
+                    newAreas[suggestionData.category] = suggestionData.subfields
+                        ? suggestionData.subfields.split(',').map(s => s.trim())
+                        : [];
                 }
 
                 const updatedData = {
