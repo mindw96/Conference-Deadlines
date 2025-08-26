@@ -386,8 +386,25 @@
             adminView.classList.remove('d-none');
             authControls.classList.remove('d-none');
             userEmailSpan.textContent = session.user.email;
-            fetchSuggestions();
-            fetchConferences();
+            try {
+                const [suggestionsResponse, conferencesResponse] = await Promise.all([
+                    supabase.from('conference_suggestions').select('*').order('created_at', { ascending: true }),
+                    supabase.from('conferences').select('*, deadlines(*)').order('name', { ascending: true })
+                ]);
+
+                if (suggestionsResponse.error) throw suggestionsResponse.error;
+                if (conferencesResponse.error) throw conferencesResponse.error;
+
+                const suggestions = suggestionsResponse.data || [];
+                const conferences = conferencesResponse.data || [];
+
+                renderSuggestions(suggestions, conferences); // conferences 데이터를 함께 전달
+                renderConferences(conferences);
+
+            } catch (error) {
+                console.error('Error fetching admin data:', error);
+                suggestionsList.innerHTML = `<div class="alert alert-danger">Failed to load data: ${error.message}</div>`;
+            }
         } else {
             loginView.classList.remove('d-none');
             adminView.classList.add('d-none');
