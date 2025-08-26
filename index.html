@@ -202,7 +202,44 @@
                     <p class="small text-body-secondary">Found incorrect information? Please correct it below and submit
                         for review. Thank you!</p>
                     <form id="suggestEditForm">
-                        <input type="hidden" id="editSuggestionConfId">
+                        <input type="hidden" id="suggestEditConfId">
+
+                        <div class="mb-3">
+                            <label for="suggestEditConfName" class="form-label">Conference Name</label>
+                            <input type="text" class="form-control" id="suggestEditConfName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="suggestEditConfUrl" class="form-label">Official Website URL</label>
+                            <input type="url" class="form-control" id="suggestEditConfUrl" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="suggestEditConfLocation" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="suggestEditConfLocation">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="suggestEditConfStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="suggestEditConfStartDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="suggestEditConfEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="suggestEditConfEndDate">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 p-3 border rounded">
+                            <label class="form-label">Areas</label>
+                            <div id="suggestEditAreasContainer"></div>
+                            <button type="button" id="addSuggestEditAreaBtn"
+                                class="btn btn-sm btn-outline-secondary mt-2">Add Area</button>
+                        </div>
+
+                        <div class="mb-3 p-3 border rounded">
+                            <label class="form-label">Deadlines (AOE Time)</label>
+                            <div id="suggestEditDeadlinesContainer"></div>
+                            <button type="button" id="addSuggestEditDeadlineBtn"
+                                class="btn btn-sm btn-outline-secondary mt-1">Add Deadline</button>
+                        </div>
 
                         <div class="modal-footer pb-0">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
