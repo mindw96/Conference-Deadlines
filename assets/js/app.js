@@ -901,7 +901,7 @@
 
             // 폼 초기화
             suggestEditForm.reset();
-            suggestEditDeadlinesContainer.innerHTML = '';
+            suggestEditSubfieldsContainer.innerHTML = '';
             QS('#suggestEditDeadlinesContainer').innerHTML = '';
 
             QS('#suggestEditConfId').value = item.id;
@@ -950,7 +950,11 @@
 
             // Deadlines 수집 (기존과 동일)
             const deadlines = [];
-            // ... (기존 deadlines 수집 로직)
+            suggestEditDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
+                const type = group.querySelector('.deadline-type').value.trim();
+                const due = group.querySelector('.deadline-date').value;
+                if (type && due) deadlines.push({ type, due: new Date(due).toISOString() });
+            });
 
             // Category와 Subfields 수집 (새 구조에 맞게)
             const category = suggestEditCategoryInput.value.trim();
