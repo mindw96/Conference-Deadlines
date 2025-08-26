@@ -274,32 +274,48 @@
             description: `Conference Website: ${item.site || 'N/A'}`
         };
 
+        let deadlineDisplayHTML;
+        const hasDeadlines = item.deadlines && item.deadlines.length > 0;
         const now = new Date();
 
-        let deadlineDisplayHTML;
+        if (!hasDeadlines) {
+            // 1. 마감일 정보가 아예 없을 경우
+            deadlineDisplayHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
 
-        if (item.deadlines && item.deadlines.length > 0) {
-            // 1. 표시할 summary 텍스트를 결정합니다.
+        } else if (item.deadlines.length === 1) {
+            // 2. 마감일이 정확히 하나일 경우 (details 태그 사용 안 함)
+            const singleDeadline = item.deadlines[0];
+            const isPassed = singleDeadline.due < now;
+            const textClass = isPassed ? 'text-body-secondary' : '';
+            const passedText = isPassed ? '<em>(Passed)</em> ' : '';
+
+            deadlineDisplayHTML = `
+            <div>
+                <span class="small ${textClass}">
+                    ${passedText}<strong>${singleDeadline.type}:</strong> ${formatDateAOE(singleDeadline.due)}
+                </span>
+            </div>
+        `;
+
+        } else {
+            // 3. 마감일이 여러 개일 경우 (details 태그 사용)
             let summaryText;
             if (item.nextDue) {
-                // 다가올 마감일이 있으면, 그것을 summary로 표시
+                // 3-1. 다가올 마감일이 있으면, 그것을 summary로 표시
                 const nextDeadlineDetails = item.deadlines.find(d => d.due.getTime() === item.nextDue.getTime());
                 const deadlineType = nextDeadlineDetails ? nextDeadlineDetails.type : 'Next Deadline';
                 summaryText = `<strong>${deadlineType}:</strong> ${formatDateAOE(item.nextDue)}`;
             } else {
-                // 지난 마감일만 있으면, 가장 마지막 마감일을 summary로 표시
-                const lastDeadline = item.deadlines[item.deadlines.length - 1];
-                summaryText = `<span class="text-body-secondary"><em>(Passed)</em> <strong>${lastDeadline.type}:</strong> ${formatDateAOE(lastDeadline.due)}</span>`;
+                // 3-2. 모든 마감일이 지났을 경우, 지정된 텍스트를 summary로 표시
+                summaryText = `<span class="text-body-secondary">All deadlines have passed</span>`;
             }
 
-            // 2. <details> 태그 안에 들어갈 전체 마감일 목록을 생성합니다.
             const allDeadlinesList = item.deadlines.map(d => {
-                const isPassed = d.due < new Date();
+                const isPassed = d.due < now;
                 const textClass = isPassed ? 'text-body-secondary' : '';
                 return `<li class="list-group-item border-0 py-1 ${textClass}"><small><strong>${d.type}:</strong> ${formatDateAOE(d.due)}</small></li>`;
             }).join('');
 
-            // 3. 최종 HTML을 <details> 태그로 감쌉니다.
             deadlineDisplayHTML = `
             <details class="deadline-details">
                 <summary class="small">${summaryText}</summary>
@@ -308,9 +324,6 @@
                 </ul>
             </details>
         `;
-        } else {
-            // 마감일 정보가 아예 없을 경우
-            deadlineDisplayHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
         }
 
         const deadlineMenuItemsHTML = item.deadlines.filter(deadline => deadline.due > now).map((deadline, index) => {
@@ -373,7 +386,7 @@
                             ${renderAreaBadges(item.areas)}
                             ${renderTagChips(item.tags)}
                         </div>
-                        <div class="list-group list-group-flush mb-2">
+                        <div class="mb-2">
                             ${deadlineDisplayHTML} 
                         </div>
                         <div class="d-flex gap-2">
