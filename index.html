@@ -190,6 +190,29 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="suggestEditModal" tabindex="-1" aria-labelledby="suggestEditModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="suggestEditModalLabel">Suggest an Edit</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-body-secondary">Found incorrect information? Please correct it below and submit
+                        for review. Thank you!</p>
+                    <form id="suggestEditForm">
+                        <input type="hidden" id="editSuggestionConfId">
+
+                        <div class="modal-footer pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit for Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"

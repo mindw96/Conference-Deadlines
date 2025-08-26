@@ -399,6 +399,12 @@
                         <div class="d-flex gap-2">
                             ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
                             ${addToCalendarHTML}
+                            <button class="btn btn-sm btn-outline-info ms-auto" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#suggestEditModal" 
+                                    data-conf-id="${item.id}">
+                                Suggest an Edit
+                            </button>
                         </div>
                     </div>
                 </article>`;
@@ -734,6 +740,22 @@
         const suggestionForm = QS("#suggestionForm");
         const suggestionDeadlinesContainer = QS('#suggestionDeadlinesContainer');
         const addSuggestionDeadlineBtn = QS('#addSuggestionDeadlineBtn');
+        const suggestEditModalEl = QS('#suggestEditModal');
+        const suggestEditForm = QS('#suggestEditForm');
+        const editSuggestionDeadlinesContainer = QS('#suggestEditModal #suggestionDeadlinesContainer'); // ID가 중복되지 않도록 주의
+        const addEditSuggestionDeadlineBtn = QS('#suggestEditModal #addSuggestionDeadlineBtn');
+
+        function addEditSuggestionDeadlineInput(type = '', date = '') {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
+            div.innerHTML = `
+                <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
+                <input type="datetime-local" class="form-control suggestion-deadline-due" value="${formattedDate}">
+                <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
+            `;
+            editSuggestionDeadlinesContainer.appendChild(div);
+        }
 
         const addSuggestionDeadlineInput = () => {
             const div = document.createElement('div');
@@ -859,5 +881,81 @@
                 submitButton.textContent = 'Submit for Review';
             });
         }
+        suggestEditModalEl.addEventListener('show.bs.modal', (event) => {
+            const button = event.relatedTarget;
+            const confId = button.getAttribute('data-conf-id');
+            const item = state.items.find(conf => conf.id === confId);
+            if (!item) return;
+
+            // 폼 초기화
+            suggestEditForm.reset();
+            editSuggestionDeadlinesContainer.innerHTML = '';
+
+            // 숨겨진 필드에 ID 저장
+            QS('#editSuggestionConfId').value = item.id;
+
+            // 기본 정보 채우기
+            QS('#suggestEditForm #confName').value = item.name;
+            QS('#suggestEditForm #confUrl').value = item.site;
+            QS('#suggestEditForm #confLocation').value = item.location;
+            QS('#suggestEditForm #confStartDate').value = item.dates?.conf_start;
+            QS('#suggestEditForm #confEndDate').value = item.dates?.conf_end;
+
+            // Deadlines 정보 채우기
+            if (item.deadlines && item.deadlines.length > 0) {
+                item.deadlines.forEach(d => addEditSuggestionDeadlineInput(d.type, d.due));
+            }
+        });
+
+        // 'Add Deadline' 버튼 및 삭제 버튼 이벤트 리스너
+        addEditSuggestionDeadlineBtn.addEventListener('click', () => addEditSuggestionDeadlineInput());
+        editSuggestionDeadlinesContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-suggestion-deadline-btn')) {
+                event.target.closest('.input-group').remove();
+            }
+        });
+
+        // 수정 제안 폼 제출 로직
+        suggestEditForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const submitButton = suggestEditForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            const targetId = QS('#editSuggestionConfId').value;
+
+            // 1. 폼에서 수정된 모든 데이터를 수집
+            const deadlines = [];
+            editSuggestionDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
+                const type = group.querySelector('.suggestion-deadline-type').value.trim();
+                const due = group.querySelector('.suggestion-deadline-due').value;
+                if (type && due) {
+                    deadlines.push({ type, due: new Date(due).toISOString() });
+                }
+            });
+
+            // 2. Supabase에 보낼 최종 제안 객체 생성
+            const finalSuggestion = {
+                name: QS('#suggestEditForm #confName').value,
+                site_url: QS('#suggestEditForm #confUrl').value,
+                location: QS('#suggestEditForm #confLocation').value,
+                conf_start_date: QS('#suggestEditForm #confStartDate').value || null,
+                conf_end_date: QS('#suggestEditForm #confEndDate').value || null,
+                deadlines: deadlines,
+                is_edit: true,
+                target_conference_id: targetId,
+            };
+
+            // 3. 'conference_suggestions' 테이블에 데이터 INSERT
+            const { error } = await supabaseClient.from('conference_suggestions').insert([finalSuggestion]);
+
+            if (error) {
+                alert(`Error submitting suggestion: ${error.message}`);
+            } else {
+                alert('Thank you! Your edit suggestion has been submitted for review.');
+                const modal = bootstrap.Modal.getInstance(suggestEditModalEl);
+                modal.hide();
+            }
+            submitButton.disabled = false;
+        });
     });
 })();

@@ -99,22 +99,36 @@
             suggestionsList.innerHTML = '';
             return;
         }
+
         noSuggestionsDiv.classList.add('d-none');
-        suggestionsList.innerHTML = suggestions.map(s => `
-            <div class="card" data-id="${s.id}">
-                <div class="card-body">
-                    <h5 class="card-title">${s.name}</h5>
-                    <p class="card-text mb-1"><strong>URL:</strong> <a href="${s.site_url}" target="_blank" rel="noopener">${s.site_url}</a></p>
-                    <p class="card-text mb-1"><strong>Location:</strong> ${s.location || 'N/A'}</p>
-                    <p class="card-text mb-1"><strong>Dates:</strong> ${s.conf_start_date || 'N/A'} to ${s.conf_end_date || 'N/A'}</p>
-                    <p class="card-text mb-1"><strong>Deadline:</strong> ${s.deadline_date ? new Date(s.deadline_date).toLocaleString() : 'N/A'}</p>
-                    <div class="mt-3">
-                        <button class="btn btn-success btn-sm approve-btn">Approve</button>
-                        <button class="btn btn-danger btn-sm reject-btn">Reject</button>
+        suggestionsList.innerHTML = suggestions.map(s => {
+            const isEdit = s.is_edit;
+            const editBadge = isEdit ? `<span class="badge bg-info">Edit Suggestion</span>` : '';
+            const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${s.target_conference_id}</small></p>` : '';
+
+            // Deadlines를 보기 좋게 표시
+            const deadlinesText = s.deadlines ? s.deadlines.map(d => `${d.type}: ${new Date(d.due).toLocaleString()}`).join('<br>') : (s.deadline_date ? new Date(s.deadline_date).toLocaleString() : 'N/A');
+
+            return `
+                <div class="card" data-id="${s.id}">
+                    <div class="card-body">
+                        <h5 class="card-title d-flex justify-content-between">
+                            ${s.name}
+                            ${editBadge}
+                        </h5>
+                        ${targetInfo}
+                        <p class="card-text mb-1"><strong>URL:</strong> <a href="${s.site_url}" target="_blank" rel="noopener">${s.site_url}</a></p>
+                        <p class="card-text mb-1"><strong>Location:</strong> ${s.location || 'N/A'}</p>
+                        <p class="card-text mb-1"><strong>Dates:</strong> ${s.conf_start_date || 'N/A'} to ${s.conf_end_date || 'N/A'}</p>
+                        <p class="card-text mb-1"><strong>Deadlines:</strong><br><small>${deadlinesText}</small></p>
+                        <div class="mt-3">
+                            <button class="btn btn-success btn-sm approve-btn">Approve</button>
+                            <button class="btn btn-danger btn-sm reject-btn">Reject</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+                `;
+        }).join('');
     }
 
     function renderConferences(conferences) {
@@ -158,46 +172,94 @@
             } else {
                 card.remove();
             }
-        } else if (button.matches('.approve-btn')) {
-            const { data: suggestionData, error: fetchError } = await supabase.from('conference_suggestions').select('*').eq('id', suggestionId).single();
+            return; // Early return
+        }
+
+        if (button.matches('.approve-btn')) {
+            // 1. 제안 데이터 가져오기
+            const { data: suggestionData, error: fetchError } = await supabase
+                .from('conference_suggestions').select('*').eq('id', suggestionId).single();
+
             if (fetchError) {
                 alert(`Could not fetch suggestion details: ${fetchError.message}`);
                 button.disabled = false;
                 return;
             }
 
-            const newConference = {
-                id: suggestionData.name.toLowerCase().replace(/\s+/g, '-') + '-' + new Date(suggestionData.conf_start_date).getFullYear(),
-                name: suggestionData.name,
-                conf_start_date: suggestionData.conf_start_date,
-                conf_end_date: suggestionData.conf_end_date,
-                location: suggestionData.location,
-                site_url: suggestionData.site_url,
-                areas: {}, tags: [],
-            };
+            // 2. '수정 제안'인지 '신규 제안'인지에 따라 로직 분기
+            if (suggestionData.is_edit) {
+                // === UPDATE 로직 (수정 제안 승인) ===
+                const targetId = suggestionData.target_conference_id;
+                if (!targetId) {
+                    alert('Error: Target conference ID is missing for this edit suggestion.');
+                    button.disabled = false;
+                    return;
+                }
 
-            const { error: confError } = await supabase.from('conferences').insert([newConference]);
-            if (confError) {
-                alert(`Error inserting into conferences: ${confError.message}`);
-                button.disabled = false;
-                return;
-            }
-
-            if (suggestionData.deadline_date) {
-                const newDeadline = {
-                    conference_id: newConference.id,
-                    deadline_type: 'Deadline',
-                    due_date: suggestionData.deadline_date,
+                const updatedData = {
+                    name: suggestionData.name,
+                    site_url: suggestionData.site_url,
+                    location: suggestionData.location,
+                    conf_start_date: suggestionData.conf_start_date,
+                    conf_end_date: suggestionData.conf_end_date,
+                    areas: suggestionData.areas || {},
                 };
-                const { error: deadlineError } = await supabase.from('deadlines').insert([newDeadline]);
-                if (deadlineError) {
-                    alert(`Conference was added, but deadline failed: ${deadlineError.message}`);
+
+                const { error: confError } = await supabase.from('conferences').update(updatedData).eq('id', targetId);
+                if (confError) { alert(`Error updating conference: ${confError.message}`); button.disabled = false; return; }
+
+                const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', targetId);
+                if (deleteError) { alert(`Error clearing old deadlines: ${deleteError.message}`); button.disabled = false; return; }
+
+                if (suggestionData.deadlines && suggestionData.deadlines.length > 0) {
+                    const newDeadlines = suggestionData.deadlines.map(d => ({ conference_id: targetId, deadline_type: d.type, due_date: d.due }));
+                    const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
+                    if (insertError) { alert(`Error inserting new deadlines: ${insertError.message}`); button.disabled = false; return; }
+                }
+
+            } else {
+                // === INSERT 로직 (신규 제안 승인) ===
+                const year = suggestionData.conf_start_date ? new Date(suggestionData.conf_start_date).getFullYear() : new Date().getFullYear();
+                const newConferenceId = suggestionData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + year;
+
+                const newConference = {
+                    id: newConferenceId,
+                    name: suggestionData.name,
+                    conf_start_date: suggestionData.conf_start_date,
+                    conf_end_date: suggestionData.conf_end_date,
+                    location: suggestionData.location,
+                    site_url: suggestionData.site_url,
+                    areas: suggestionData.areas || {},
+                    tags: suggestionData.tags || [],
+                };
+
+                const { error: confError } = await supabase.from('conferences').insert([newConference]);
+                if (confError) {
+                    alert(`Error inserting new conference: ${confError.message}`);
+                    button.disabled = false;
+                    return;
+                }
+
+                if (suggestionData.deadlines && suggestionData.deadlines.length > 0) {
+                    const newDeadlines = suggestionData.deadlines.map(d => ({
+                        conference_id: newConferenceId,
+                        deadline_type: d.type,
+                        due_date: d.due
+                    }));
+                    const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
+                    if (insertError) {
+                        alert(`Conference was added, but deadline insertion failed: ${insertError.message}`);
+                        // Conference was still added, so we continue to the success step.
+                    }
                 }
             }
 
+            // 3. 제안 처리 완료 후 공통 로직
             await supabase.from('conference_suggestions').delete().eq('id', suggestionId);
             card.remove();
-            fetchConferences(); // Refresh conference list
+            fetchConferences(); // 목록 새로고침
+            alert('Suggestion approved and applied successfully!');
+            button.disabled = false;
         }
     }
 
