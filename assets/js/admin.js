@@ -118,9 +118,6 @@
                 }
             }
 
-            const editBadge = isEdit ? `<span class="badge bg-info">Edit Suggestion</span>` : '';
-            const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${s.target_conference_id}</small></p>` : '';
-            const deadlinesText = s.deadlines ? s.deadlines.map(d => `${d.type}: ${new Date(d.due).toLocaleString()}`).join('<br>') : (s.deadline_date ? new Date(s.deadline_date).toLocaleString() : 'N/A');
             const categoryHTML = s.category ? `<p class="card-text mb-1"><strong>Category:</strong> ${s.category}</p>` : '';
             const subfieldsHTML = s.subfields ? `<p class="card-text mb-1"><strong>Subfields:</strong> ${s.subfields}</p>` : '';
 
