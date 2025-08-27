@@ -89,6 +89,8 @@
             return;
         }
 
+        const conferenceMap = new Map(allConferences.map(conf => [conf.id, conf]));
+
         noSuggestionsDiv.classList.add('d-none');
         suggestionsList.innerHTML = suggestions.map(s => {
             const isEdit = s.is_edit;
