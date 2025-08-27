@@ -82,6 +82,53 @@
         renderConferences(data);
     }
 
+    /**
+ * Compares two conference objects and returns an array of changes.
+ * @param {object} original - The original conference data.
+ * @param {object} suggestion - The suggested conference data.
+ * @returns {string[]} An array of strings describing the changes.
+ */
+    function compareConferenceData(original, suggestion) {
+        const changes = [];
+        const fieldsToCompare = ['name', 'site_url', 'location', 'conf_start_date', 'conf_end_date'];
+
+        // 1. Compare simple text fields
+        fieldsToCompare.forEach(field => {
+            // Treat null and empty strings as the same to avoid unnecessary diffs
+            const originalValue = original[field] || '';
+            const suggestionValue = suggestion[field] || '';
+
+            if (originalValue !== suggestionValue) {
+                changes.push(`<b>${field}:</b> "${originalValue}" → "${suggestionValue}"`);
+            }
+        });
+
+        // 2. Compare 'areas' by creating a comparable string
+        const originalAreas = original.areas ? JSON.stringify(original.areas) : '{}';
+
+        const suggestionAreas = {};
+        if (suggestion.category) {
+            suggestionAreas[suggestion.category] = suggestion.subfields
+                ? suggestion.subfields.split(',').map(s => s.trim())
+                : [];
+        }
+        const suggestionAreasString = JSON.stringify(suggestionAreas);
+
+        if (originalAreas !== suggestionAreasString) {
+            changes.push(`<b>Areas:</b> Have been updated.`);
+        }
+
+        // 3. Compare 'deadlines' by creating a comparable string
+        const originalDeadlines = original.deadlines ? JSON.stringify(original.deadlines.map(d => ({ type: d.deadline_type, due: d.due_date })).sort()) : '[]';
+        const suggestionDeadlines = suggestion.deadlines ? JSON.stringify(suggestion.deadlines.sort()) : '[]';
+
+        if (originalDeadlines !== suggestionDeadlines) {
+            changes.push(`<b>Deadlines:</b> List has been updated.`);
+        }
+
+        return changes;
+    }
+
     function renderSuggestions(suggestions, allConferences) {
         if (suggestions.length === 0) {
             noSuggestionsDiv.classList.remove('d-none');
