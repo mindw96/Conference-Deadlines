@@ -406,14 +406,14 @@
                         <div class="mb-2">
                             ${deadlineDisplayHTML} 
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex gap-2">
-                                ${item.site ? `
-                                    <a href="${item.site}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" 
-                                    data-bs-toggle="tooltip" title="Visit Website">
-                                        <i class="bi bi-box-arrow-up-right"></i>
-                                    </a>` : ""}
-                                ${addToCalendarHTML} </div>
+                        <div class="d-flex gap-2">
+                            ${item.site ? `
+                                <a href="${item.site}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" 
+                                data-bs-toggle="tooltip" title="Visit Website">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>` : ""}
+
+                            ${addToCalendarHTML}
 
                             <button class="btn btn-sm btn-outline-secondary" 
                                     data-bs-toggle="modal" 
