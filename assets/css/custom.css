@@ -264,3 +264,30 @@ button:focus-visible,
     white-space: nowrap !important;
     border: 0 !important;
 }
+
+/* --- 아이콘 버튼 스타일 --- */
+
+/* 카드 하단 버튼의 아이콘 기본 색상 지정 */
+.card .btn i {
+    color: var(--text-secondary);
+    /* 라이트 모드: 어두운 회색 */
+    transition: color 0.15s ease-in-out;
+}
+
+/* 버튼에 마우스를 올렸을 때 아이콘 색상 변경 */
+.card .btn:hover i {
+    color: var(--color-primary);
+    /* 라이트 모드: 파란색 */
+}
+
+/* 다크 모드일 때의 아이콘 색상 재정의 */
+[data-bs-theme="dark"] .card .btn i {
+    color: var(--text-secondary);
+    /* 다크 모드: 밝은 회색 */
+}
+
+/* 다크 모드에서 버튼에 마우스를 올렸을 때 아이콘 색상 */
+[data-bs-theme="dark"] .card .btn:hover i {
+    color: var(--color-primary);
+    /* 다크 모드: 밝은 파란색 */
+}
