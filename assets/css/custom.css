@@ -276,7 +276,7 @@ button:focus-visible,
 
 /* 버튼에 마우스를 올렸을 때 아이콘 색상 변경 */
 .card .btn:hover i {
-    color: var(--color-primary);
+    color: var(--color-primary-light);
     /* 라이트 모드: 파란색 */
 }
 
@@ -288,6 +288,6 @@ button:focus-visible,
 
 /* 다크 모드에서 버튼에 마우스를 올렸을 때 아이콘 색상 */
 [data-bs-theme="dark"] .card .btn:hover i {
-    color: var(--color-primary);
+    color: var(--color-primary-dark);
     /* 다크 모드: 밝은 파란색 */
 }
