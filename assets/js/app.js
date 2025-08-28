@@ -368,7 +368,7 @@
             `
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Add to Calendar
+                        <i class="bi bi-calendar2-plus"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li><h6 class="dropdown-header">Conference Schedule</h6></li>
