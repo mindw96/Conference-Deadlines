@@ -231,6 +231,16 @@
         const cardsContainer = QS("#cards");
         const noResultsContainer = QS("#noResults");
 
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            // 기존 툴팁이 있다면 파괴하고 새로 만듭니다.
+            const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+            if (existingTooltip) {
+                existingTooltip.dispose();
+            }
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // [수정] 로직을 깔끔하게 정리합니다.
         if (state.filtered.length === 0) {
             // 결과가 없으면: '결과 없음' 메시지를 보여주고, 카드 컨테이너는 숨깁니다.
@@ -396,14 +406,21 @@
                         <div class="mb-2">
                             ${deadlineDisplayHTML} 
                         </div>
-                        <div class="d-flex gap-2">
-                            ${url ? `<a class="btn btn-sm btn-outline-primary" href="${url}" target="_blank" rel="noopener">Website</a>` : ""}
-                            ${addToCalendarHTML}
-                            <button class="btn btn-sm btn-outline-info ms-auto" 
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-2">
+                                ${item.site ? `
+                                    <a href="${item.site}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" 
+                                    data-bs-toggle="tooltip" title="Visit Website">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>` : ""}
+                                ${addToCalendarHTML} </div>
+
+                            <button class="btn btn-sm btn-outline-secondary" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#suggestEditModal" 
-                                    data-conf-id="${item.id}">
-                                Suggest an Edit
+                                    data-conf-id="${item.id}"
+                                    data-bs-toggle="tooltip" title="Suggest an Edit">
+                                <i class="bi bi-pencil-square"></i>
                             </button>
                         </div>
                     </div>
