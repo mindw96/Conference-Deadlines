@@ -756,7 +756,7 @@
         const suggestModal = QS('#suggestModal');
         const suggestionForm = QS("#suggestionForm");
         const suggestionDeadlinesContainer = QS('#suggestionDeadlinesContainer');
-        const addSuggestionDeadlineBtn = QS('#addSuggestionDeadlineBtn');
+        const addSuggestionDeadlineBtn = QS('#addSuggestEditDeadlineBtn');
         const suggestEditModalEl = QS('#suggestEditModal');
         const suggestEditForm = QS('#suggestEditForm');
         const suggestEditCategoryInput = QS('#suggestEditCategory');
@@ -778,10 +778,10 @@
             div.className = 'input-group mb-2';
             const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
             div.innerHTML = `
-        <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
-        <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
-        <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
-    `;
+                <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
+                <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
+                <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
+            `;
             suggestEditDeadlinesContainer.appendChild(div);
         }
 
