@@ -1,6 +1,18 @@
 (function () {
     const QS = s => document.querySelector(s);
 
+    function formatDateAOE(date) {
+        if (!date) return 'N/A';
+        // Date 객체가 아닐 경우 변환
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+        return new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'Etc/GMT+12', // AOE timezone
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', hour12: false
+        }).format(dateObj) + " (AOE)";
+    }
+
     // --- SUPABASE SETUP ---
     const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
@@ -145,7 +157,9 @@
             const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${s.target_conference_id}</small></p>` : '';
 
             // Deadlines를 보기 좋게 표시
-            const deadlinesText = s.deadlines ? s.deadlines.map(d => `${d.type}: ${new Date(d.due).toLocaleString()}`).join('<br>') : (s.deadline_date ? new Date(s.deadline_date).toLocaleString() : 'N/A');
+            const deadlinesText = s.deadlines
+                ? s.deadlines.map(d => `${d.type}: ${formatDateAOE(d.due)}`).join('<br>')
+                : formatDateAOE(s.deadline_date);
 
             let changesHTML = '';
             if (isEdit && s.target_conference_id) {
