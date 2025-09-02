@@ -21,6 +21,23 @@
         showPast: false,
     };
 
+    function formatForDateTimeLocalInput(date) {
+        if (!date) return '';
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+        const formatted = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'Etc/GMT+12', // AOE
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        }).format(dateObj);
+
+        return formatted.replace(' ', 'T');
+    }
+
     // --- URL MANAGEMENT ---
     /**
      * Reads filter/sort parameters from the URL query string and applies them to the state.
@@ -777,27 +794,27 @@
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
             div.innerHTML = `
-        <input type="text" class="form-control subfield-input" placeholder="e.g., NLP">
-        <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
-    `;
+                <input type="text" class="form-control subfield-input" placeholder="e.g., NLP">
+                <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
+            `;
             subfieldsContainer.appendChild(div);
         };
         const resetSubfieldInputs = () => {
             if (!subfieldsContainer) return;
             subfieldsContainer.innerHTML = `
-        <div class="input-group mb-2">
-            <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
-        </div>
-    `;
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
+                </div>
+            `;
         };
         const addSuggestionDeadlineInput = () => {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
             div.innerHTML = `
-        <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)">
-        <input type="datetime-local" class="form-control suggestion-deadline-due">
-        <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
-    `;
+            <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)">
+            <input type="datetime-local" class="form-control suggestion-deadline-due">
+            <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
+        `;
             suggestionDeadlinesContainer.appendChild(div);
         };
 
@@ -806,20 +823,20 @@
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
             div.innerHTML = `
-        <input type="text" class="form-control suggest-edit-subfield-input" value="${value}">
-        <button class="btn btn-outline-danger remove-subfield-btn" type="button">&times;</button>
-    `;
+                <input type="text" class="form-control suggest-edit-subfield-input" value="${value}">
+                <button class="btn btn-outline-danger remove-subfield-btn" type="button">&times;</button>
+            `;
             suggestEditSubfieldsContainer.appendChild(div);
         }
         function addSuggestEditDeadlineInput(type = '', date = '') {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
-            const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
+            const formattedDate = formatForDateTimeLocalInput(date);
             div.innerHTML = `
-        <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
-        <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
-        <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
-    `;
+                <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
+                <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
+                <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
+            `;
             suggestEditDeadlinesContainer.appendChild(div);
         }
 

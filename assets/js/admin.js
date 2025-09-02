@@ -13,6 +13,23 @@
         }).format(dateObj) + " (AOE)";
     }
 
+    function formatForDateTimeLocalInput(date) {
+        if (!date) return '';
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+        const formatted = new Intl.DateTimeFormat('sv-SE', {
+            timeZone: 'Etc/GMT+12', // AOE
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        }).format(dateObj);
+
+        return formatted.replace(' ', 'T');
+    }
+
     // --- SUPABASE SETUP ---
     const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
@@ -49,7 +66,7 @@
     function addDeadlineInput(type = '', date = '') {
         const div = document.createElement('div');
         div.className = 'input-group mb-2 deadline-group';
-        const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
+        const formattedDate = formatForDateTimeLocalInput(date);
         div.innerHTML = `
             <input type="text" class="form-control deadline-type" placeholder="Deadline Type" value="${type}">
             <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
