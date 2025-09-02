@@ -870,10 +870,7 @@
                     const type = group.querySelector('.suggestion-deadline-type').value.trim();
                     const due = group.querySelector('.suggestion-deadline-due').value;
                     if (type && due) {
-                        deadlines.push({
-                            type: type,
-                            due: new Date(due).toISOString()
-                        });
+                        deadlines.push({ type: type, due: new Date(due + ':00-12:00').toISOString() });
                     }
                 });
 
@@ -970,7 +967,7 @@
             suggestEditDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
                 const type = group.querySelector('.deadline-type').value.trim();
                 const due = group.querySelector('.deadline-date').value;
-                if (type && due) deadlines.push({ type, due: new Date(due).toISOString() });
+                if (type && due) deadlines.push({ type, due: new Date(due + ':00-12:00').toISOString() });
             });
 
             // Category와 Subfields 수집 (새 구조에 맞게)

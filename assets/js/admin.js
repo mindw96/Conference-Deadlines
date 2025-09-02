@@ -396,7 +396,7 @@
             const type = group.querySelector('.deadline-type').value.trim();
             const date = group.querySelector('.deadline-date').value;
             if (type && date) {
-                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: new Date(date).toISOString() });
+                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: new Date(date + ':00-12:00').toISOString() });
             }
         });
 
