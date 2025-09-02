@@ -750,56 +750,94 @@
             }
         });
 
-        // --- Suggestion Modal & Form Logic ---
-        const subfieldsContainer = QS('#subfieldsContainer');
-        const addSubfieldBtn = QS('#addSubfieldBtn');
+        // --- Suggestion Modal & Form Logic (FINAL & FIXED) ---
+
+        // --- UI Elements ---
+        // 'Add Conference' Modal Elements
         const suggestModal = QS('#suggestModal');
         const suggestionForm = QS("#suggestionForm");
+        const subfieldsContainer = QS('#subfieldsContainer');
+        const addSubfieldBtn = QS('#addSubfieldBtn');
         const suggestionDeadlinesContainer = QS('#suggestionDeadlinesContainer');
-        const addSuggestionDeadlineBtn = QS('#addSuggestEditDeadlineBtn');
+        const addSuggestionDeadlineBtn = QS('#addSuggestionDeadlineBtn');
+
+        // 'Suggest an Edit' Modal Elements
         const suggestEditModalEl = QS('#suggestEditModal');
         const suggestEditForm = QS('#suggestEditForm');
         const suggestEditCategoryInput = QS('#suggestEditCategory');
         const suggestEditSubfieldsContainer = QS('#suggestEditSubfieldsContainer');
         const addSuggestEditSubfieldBtn = QS('#addSuggestEditSubfieldBtn');
+        const suggestEditDeadlinesContainer = QS('#suggestEditDeadlinesContainer');
+        const addSuggestEditDeadlineBtn = QS('#addSuggestEditDeadlineBtn');
 
+        // --- Helper Functions ---
+
+        // Helper for 'Add Conference' Modal
+        const addSubfieldInput = () => {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+        <input type="text" class="form-control subfield-input" placeholder="e.g., NLP">
+        <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
+    `;
+            subfieldsContainer.appendChild(div);
+        };
+        const resetSubfieldInputs = () => {
+            if (!subfieldsContainer) return;
+            subfieldsContainer.innerHTML = `
+        <div class="input-group mb-2">
+            <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
+        </div>
+    `;
+        };
+        const addSuggestionDeadlineInput = () => {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+        <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)">
+        <input type="datetime-local" class="form-control suggestion-deadline-due">
+        <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
+    `;
+            suggestionDeadlinesContainer.appendChild(div);
+        };
+
+        // Helper for 'Suggest an Edit' Modal
         function addSuggestEditSubfieldInput(value = '') {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
             div.innerHTML = `
-                            <input type="text" class="form-control suggest-edit-subfield-input" value="${value}">
-                            <button class="btn btn-outline-danger remove-subfield-btn" type="button">&times;</button>
-                        `;
+        <input type="text" class="form-control suggest-edit-subfield-input" value="${value}">
+        <button class="btn btn-outline-danger remove-subfield-btn" type="button">&times;</button>
+    `;
             suggestEditSubfieldsContainer.appendChild(div);
         }
-
         function addSuggestEditDeadlineInput(type = '', date = '') {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
             const formattedDate = date ? new Date(date).toISOString().slice(0, 16) : '';
             div.innerHTML = `
-                <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
-                <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
-                <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
-            `;
+        <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${type}">
+        <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
+        <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
+    `;
             suggestEditDeadlinesContainer.appendChild(div);
         }
 
-        const addSuggestionDeadlineInput = () => {
-            const div = document.createElement('div');
-            div.className = 'input-group mb-2';
-            div.innerHTML = `
-                <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Full Paper)">
-                <input type="datetime-local" class="form-control suggestion-deadline-due">
-                <button class="btn btn-outline-danger remove-suggestion-deadline-btn" type="button">&times;</button>
-            `;
-            suggestionDeadlinesContainer.appendChild(div);
-        };
 
+        // --- Event Listeners for 'Add Conference' Modal ---
+        if (addSubfieldBtn) {
+            addSubfieldBtn.addEventListener('click', addSubfieldInput);
+        }
+        if (subfieldsContainer) {
+            subfieldsContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('remove-subfield-btn')) {
+                    event.target.closest('.input-group').remove();
+                }
+            });
+        }
         if (addSuggestionDeadlineBtn) {
             addSuggestionDeadlineBtn.addEventListener('click', addSuggestionDeadlineInput);
         }
-
         if (suggestionDeadlinesContainer) {
             suggestionDeadlinesContainer.addEventListener('click', (event) => {
                 if (event.target.classList.contains('remove-suggestion-deadline-btn')) {
@@ -807,50 +845,23 @@
                 }
             });
         }
-
-        // Function to add a new subfield input field
-        const addSubfieldInput = () => {
-            const div = document.createElement('div');
-            div.className = 'input-group mb-2';
-            div.innerHTML = `
-                <input type="text" class="form-control subfield-input" placeholder="e.g., NLP">
-                <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
-            `;
-            subfieldsContainer.appendChild(div);
-        };
-
-        // Function to reset the subfield inputs to the initial state
-        const resetSubfieldInputs = () => {
-            if (!subfieldsContainer) return;
-            subfieldsContainer.innerHTML = `
-                <div class="input-group mb-2">
-                    <input type="text" class="form-control subfield-input" placeholder="CV, NLP, ..." required>
-                </div>
-            `;
-        };
-
-        if (addSubfieldBtn && subfieldsContainer) {
-            addSubfieldBtn.addEventListener('click', addSubfieldInput);
-
-            // Use event delegation to handle removing subfield inputs
-            subfieldsContainer.addEventListener('click', (event) => {
-                if (event.target.classList.contains('remove-subfield-btn')) {
-                    event.target.closest('.input-group').remove();
-                }
-            });
-        }
-
-        // Reset the form (including dynamic fields) when the modal is hidden
         if (suggestModal) {
             suggestModal.addEventListener('hidden.bs.modal', () => {
                 suggestionForm?.reset();
                 QS('#suggestionAlert')?.classList.add('d-none');
                 resetSubfieldInputs();
+                // Also reset deadlines for this modal
+                if (suggestionDeadlinesContainer) {
+                    suggestionDeadlinesContainer.innerHTML = `
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Abstract)" required>
+                    <input type="datetime-local" class="form-control suggestion-deadline-due" required>
+                </div>
+            `;
+                }
             });
         }
-
-        // Handle form submission
-        if (suggestionForm && subfieldsContainer) {
+        if (suggestionForm) {
             suggestionForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 if (!suggestionForm.checkValidity()) {
@@ -860,10 +871,11 @@
 
                 const submitButton = suggestionForm.querySelector('button[type="submit"]');
                 const alertBox = QS("#suggestionAlert");
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
 
                 const subfieldValues = [...subfieldsContainer.querySelectorAll('.subfield-input')]
-                    .map(input => input.value.trim())
-                    .filter(value => value); // Filter out empty strings
+                    .map(input => input.value.trim()).filter(value => value);
 
                 const deadlines = [];
                 suggestionDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
@@ -882,41 +894,45 @@
                     conf_end_date: QS("#confEndDate").value || null,
                     category: QS("#category").value,
                     subfields: subfieldValues.join(', '),
-                    deadlines: deadlines // <<< deadlines 배열을 JSONB 컬럼에 저장
+                    deadlines: deadlines
                 };
-
-                submitButton.disabled = true;
-                submitButton.textContent = 'Submitting...';
 
                 const { error } = await supabaseClient.from('conference_suggestions').insert([suggestion]);
 
                 if (error) {
                     alertBox.className = 'alert alert-danger';
                     alertBox.textContent = `Error: ${error.message}`;
-                    console.error("Suggestion submission error:", error);
                 } else {
                     alertBox.className = 'alert alert-success';
                     alertBox.textContent = 'Thank you! Your suggestion has been submitted for review.';
                     suggestionForm.reset();
                     resetSubfieldInputs();
+                    if (suggestionDeadlinesContainer) {
+                        suggestionDeadlinesContainer.innerHTML = `
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control suggestion-deadline-type" placeholder="Type (e.g., Abstract)" required>
+                        <input type="datetime-local" class="form-control suggestion-deadline-due" required>
+                    </div>
+                `;
+                    }
                 }
-
                 alertBox.classList.remove('d-none');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit for Review';
             });
         }
 
+
+        // --- Event Listeners for 'Suggest an Edit' Modal ---
         suggestEditModalEl.addEventListener('show.bs.modal', (event) => {
             const button = event.relatedTarget;
             const confId = button.getAttribute('data-conf-id');
             const item = state.items.find(conf => conf.id === confId);
             if (!item) return;
 
-            // 폼 초기화
             suggestEditForm.reset();
             suggestEditSubfieldsContainer.innerHTML = '';
-            QS('#suggestEditDeadlinesContainer').innerHTML = '';
+            suggestEditDeadlinesContainer.innerHTML = '';
 
             QS('#suggestEditConfId').value = item.id;
             QS('#suggestEditConfName').value = item.name;
@@ -928,28 +944,35 @@
             if (item.areas) {
                 const firstCategory = Object.keys(item.areas)[0] || '';
                 suggestEditCategoryInput.value = firstCategory;
-
                 const subfields = item.areas[firstCategory] || [];
                 if (subfields.length > 0) {
                     subfields.forEach(sub => addSuggestEditSubfieldInput(sub));
                 } else {
-                    addSuggestEditSubfieldInput(); // 서브필드가 없으면 빈 칸 하나 추가
+                    addSuggestEditSubfieldInput();
                 }
             } else {
-                addSuggestEditSubfieldInput(); // areas 정보가 아예 없어도 빈 칸 추가
+                addSuggestEditSubfieldInput();
             }
 
-            // Deadlines 정보 채우기 (기존과 동일)
             if (item.deadlines && item.deadlines.length > 0) {
                 item.deadlines.forEach(d => addSuggestEditDeadlineInput(d.type, d.due));
+            } else {
+                addSuggestEditDeadlineInput(); // 마감일 없으면 빈 칸 하나 추가
             }
         });
 
         addSuggestEditSubfieldBtn.addEventListener('click', () => addSuggestEditSubfieldInput());
         suggestEditSubfieldsContainer.addEventListener('click', (e) => {
             if (e.target.matches('.remove-subfield-btn')) {
-                // 최소 1개의 입력 필드는 남겨두기
                 if (suggestEditSubfieldsContainer.querySelectorAll('.input-group').length > 1) {
+                    e.target.closest('.input-group').remove();
+                }
+            }
+        });
+        addSuggestEditDeadlineBtn.addEventListener('click', () => addSuggestEditDeadlineInput());
+        suggestEditDeadlinesContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.remove-deadline-btn')) {
+                if (suggestEditDeadlinesContainer.querySelectorAll('.input-group').length > 1) {
                     e.target.closest('.input-group').remove();
                 }
             }
@@ -962,20 +985,18 @@
 
             const targetId = QS('#suggestEditConfId').value;
 
-            // Deadlines 수집 (기존과 동일)
             const deadlines = [];
             suggestEditDeadlinesContainer.querySelectorAll('.input-group').forEach(group => {
                 const type = group.querySelector('.deadline-type').value.trim();
                 const due = group.querySelector('.deadline-date').value;
-                if (type && due) deadlines.push({ type, due: new Date(due + ':00-12:00').toISOString() });
+                if (type && due) {
+                    deadlines.push({ type, due: new Date(due + ':00-12:00').toISOString() });
+                }
             });
 
-            // Category와 Subfields 수집 (새 구조에 맞게)
             const category = suggestEditCategoryInput.value.trim();
             const subfields = [...suggestEditSubfieldsContainer.querySelectorAll('.suggest-edit-subfield-input')]
-                .map(input => input.value.trim())
-                .filter(Boolean)
-                .join(', ');
+                .map(input => input.value.trim()).filter(Boolean).join(', ');
 
             const finalSuggestion = {
                 name: QS('#suggestEditConfName').value,
