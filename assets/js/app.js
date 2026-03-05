@@ -103,8 +103,12 @@
                     break;
                 }
             }
+            // normalizeItem 내부 - status 판정 부분
             if (nextDue) {
-                const diffDays = Math.ceil((nextDue - now) / (1000 * 60 * 60 * 24));
+                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const nextDueLocal = new Date(nextDue.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
+                const deadlineMidnightLocal = new Date(nextDueLocal.getFullYear(), nextDueLocal.getMonth(), nextDueLocal.getDate());
+                const diffDays = Math.ceil((deadlineMidnightLocal - todayMidnight) / (1000 * 60 * 60 * 24));
                 if (diffDays <= 7) status = "soon";
             }
         }
@@ -565,10 +569,27 @@
             return `<span class="badge deadline-badge badge-closed">Closed</span>`;
         }
         const now = new Date();
-        const diffDays = Math.floor((item.nextDue - now) / (1000 * 60 * 60 * 24));
+
+        // ✅ 사용자 로컬 시간 기준 오늘 자정 계산
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
+        // ✅ 마감일도 사용자 로컬 시간 기준 자정으로 변환
+        const deadlineMidnight = new Date(item.nextDue.getFullYear(), item.nextDue.getMonth(), item.nextDue.getDate(), 0, 0, 0, 0);
+        // 단, nextDue는 UTC 기반이므로 로컬 날짜로 변환
+        const deadlineLocal = new Date(item.nextDue.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
+        const deadlineMidnightLocal = new Date(deadlineLocal.getFullYear(), deadlineLocal.getMonth(), deadlineLocal.getDate(), 0, 0, 0, 0);
+
+        const diffMs = deadlineMidnightLocal - todayMidnight;
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+        // D-DAY: 마감일이 오늘이거나 지났지만 실제 시각은 아직 안 지남
+        if (diffDays <= 0 && item.nextDue > now) {
+            const cls = "badge-soon";
+            return `<span class="badge deadline-badge ${cls}">D-DAY</span>`;
+        }
+
         const cls = diffDays <= 7 ? "badge-soon" : "badge-upcoming";
         const dayText = diffDays < 1 ? 'D-DAY' : `D-${diffDays}`;
-
         return `<span class="badge deadline-badge ${cls}">${dayText}</span>`;
     }
 
