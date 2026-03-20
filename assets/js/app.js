@@ -39,10 +39,6 @@
     }
 
     // --- URL MANAGEMENT ---
-    /**
-     * Reads filter/sort parameters from the URL query string and applies them to the state.
-     * This allows users to share links with specific filters active.
-     */
     function parseQuery() {
         const url = new URL(location.href);
         state.q = url.searchParams.get("q") || "";
@@ -56,10 +52,6 @@
         QS("#sortSelect").value = state.sort;
     }
 
-    /**
-     * Updates the URL in the address bar to reflect the current filter/sort state.
-     * This creates a permalink for the current view.
-     */
     function updatePermalink() {
         const url = new URL(location.href);
         url.searchParams.set("q", state.q);
@@ -70,17 +62,25 @@
         history.replaceState(null, "", url.toString());
     }
 
+    // --- HELPER: 사용자 로컬 시간 기준으로 자정(00:00)을 반환 ---
+    function toLocalMidnight(date) {
+        const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const localStr = date.toLocaleString('en-US', { timeZone: userTZ });
+        const local = new Date(localStr);
+        return new Date(local.getFullYear(), local.getMonth(), local.getDate(), 0, 0, 0, 0);
+    }
+
+    // --- HELPER: 로컬 자정 기준 D-day 차이 계산 (양수=미래, 음수=과거) ---
+    function calcDiffDays(targetDate) {
+        const now = new Date();
+        const todayMidnight = toLocalMidnight(now);
+        const targetMidnight = toLocalMidnight(targetDate);
+        return Math.round((targetMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+    }
+
     // --- DATA HANDLING ---
-    /**
-     * Processes a raw conference object from the database into a more usable format.
-     * It calculates the status (upcoming, soon, closed) and finds the next deadline.
-     * @param {object} raw - The raw conference object from Supabase.
-     * @returns {object} The normalized conference object.
-     */
     function normalizeItem(raw) {
         const areas = (typeof raw.areas === 'object' && raw.areas !== null) ? raw.areas : {};
-
-        // With Supabase, `raw.deadlines` is always an array of {type, due} objects.
         const deadlinesList = Array.isArray(raw.deadlines) ? raw.deadlines : [];
 
         const parseable = (d) => d && d.due && !isNaN(Date.parse(d.due));
@@ -90,7 +90,6 @@
             due: new Date(d.due)
         }));
 
-        // Calculate the next upcoming deadline and the conference's status.
         let nextDue = null;
         let status = "closed";
         if (deadlines.length === 0) {
@@ -103,25 +102,16 @@
                     break;
                 }
             }
-            // normalizeItem 내부 - status 판정 부분
             if (nextDue) {
-                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const nextDueLocal = new Date(nextDue.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-                const deadlineMidnightLocal = new Date(nextDueLocal.getFullYear(), nextDueLocal.getMonth(), nextDueLocal.getDate());
-                const diffDays = Math.ceil((deadlineMidnightLocal - todayMidnight) / (1000 * 60 * 60 * 24));
+                // ✅ 로컬 자정 기준으로 "soon" 판정
+                const diffDays = calcDiffDays(nextDue);
                 if (diffDays <= 7) status = "soon";
             }
         }
         return { ...raw, areas, deadlines, nextDue, status };
     }
 
-    /**
-     * Fetches and processes the conference data from the JSON file.
-     *
-     * Fetches and processes the conference data from the Supabase database.
-     **/
     async function loadData() {
-        // Fetch all conferences and their related deadlines in one go
         const { data, error } = await supabaseClient
             .from('conferences')
             .select(`
@@ -137,7 +127,6 @@
             throw error;
         }
 
-        // Transform the data to match the application's expected format
         const transformedData = data.map(conf => {
             const deadlines = conf.deadlines.map(d => ({
                 type: d.deadline_type,
@@ -159,30 +148,22 @@
     }
 
     // --- CORE LOGIC (FILTER & SORT) ---
-    /**
-     * Filters the global conference list based on the current state.
-     */
     function applyFilters() {
         const q = state.q.trim().toLowerCase();
-
-        // Get the current date, with time set to 00:00:00 for accurate comparison.
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-
         state.filtered = state.items.filter(it => {
-            // Filter out conferences where the end date has passed.
             if (!state.showPast) {
                 const confEnd = it.dates?.conf_end;
                 if (confEnd) {
                     const confEndDate = new Date(confEnd);
                     if (confEndDate < today) {
-                        return false; // Hide if conference ended before today.
+                        return false;
                     }
                 }
             }
 
-            // Existing filter logic for status, category, etc.
             if (state.status !== "all" && it.status !== state.status) return false;
             if (state.category !== "all" && !it.areas.hasOwnProperty(state.category)) return false;
             if (state.subfield !== "all") {
@@ -204,48 +185,34 @@
         sortItems();
     }
 
-    /**
-     * Sorts the filtered conference list based on the current sort order.
-     */
     function sortItems() {
         state.filtered.sort((a, b) => {
             if (state.sort === "name_asc") {
                 return (a.name || "").localeCompare(b.name || "");
             }
 
-            // Default sort: by next upcoming deadline.
             const aHasDeadline = !!a.nextDue;
             const bHasDeadline = !!b.nextDue;
 
             if (aHasDeadline && bHasDeadline) {
-                // 1. If both have deadlines, sort by the nearest deadline.
                 return a.nextDue - b.nextDue;
             } else if (aHasDeadline) {
-                // 2. If only 'a' has a deadline, 'a' comes first.
                 return -1;
             } else if (bHasDeadline) {
-                // 3. If only 'b' has a deadline, 'b' comes first.
                 return 1;
             } else {
-                // 4. If neither has a deadline (closed or coming_soon), sort by conference start date.
                 const startDateA = a.dates?.conf_start;
                 const startDateB = b.dates?.conf_start;
 
                 if (startDateA && startDateB) {
                     return new Date(startDateA) - new Date(startDateB);
                 }
-                // Fallback to sorting by name if no start date is available.
                 return (a.name || "").localeCompare(b.name || "");
             }
         });
     }
 
     // --- RENDERING ---
-    /**
-     * Main render function: applies filters/sort and updates the DOM with the results.
-     */
-    // app.js
-
     function render() {
         applyFilters();
 
@@ -254,7 +221,6 @@
 
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
-            // 기존 툴팁이 있다면 파괴하고 새로 만듭니다.
             const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
             if (existingTooltip) {
                 existingTooltip.dispose();
@@ -262,35 +228,26 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // [수정] 로직을 깔끔하게 정리합니다.
         if (state.filtered.length === 0) {
-            // 결과가 없으면: '결과 없음' 메시지를 보여주고, 카드 컨테이너는 숨깁니다.
-            cardsContainer.innerHTML = ''; // 기존 카드 내용 비우기
+            cardsContainer.innerHTML = '';
             cardsContainer.style.display = 'none';
             noResultsContainer.classList.remove('d-none');
         } else {
-            // 결과가 있으면: 카드 컨테이너를 보여주고, '결과 없음' 메시지는 숨깁니다.
             const html = state.filtered.map(renderCard).join("");
             cardsContainer.innerHTML = html;
-            cardsContainer.style.display = 'grid'; // 원래 display 속성으로 복원
+            cardsContainer.style.display = 'grid';
             noResultsContainer.classList.add('d-none');
         }
 
         QS("#resultCount").textContent = state.filtered.length;
         startCountdownTimer();
 
-        // Popover 기능을 활성화하는 코드
         const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
         popoverTriggerList.map(function (popoverTriggerEl) {
             return new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus' });
         });
     }
 
-    /**
-     * Generates the HTML for a single conference card.
-     * @param {object} item - The conference object to render.
-     * @returns {string} The HTML string for the card.
-     */
     function renderCard(item) {
         const name = item.name || "";
         const url = item.site || "#";
@@ -310,12 +267,9 @@
         const now = new Date();
 
         if (!hasDeadlines) {
-            // Case 1: 마감일 정보가 아예 없을 경우
             deadlineDisplayHTML = '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
 
         } else if (!item.nextDue) {
-            // Case 2: 모든 마감일이 지났을 경우 (NEW RULE!)
-            // 마감일 개수와 상관없이 무조건 details 태그로 감싸고, summary를 통일합니다.
             const summaryText = `<span class="text-body-secondary">All deadlines have passed</span>`;
             const allDeadlinesList = item.deadlines.map(d =>
                 `<li class="list-group-item border-0 py-1 text-body-secondary"><small><strong>${d.type}:</strong> ${formatDateAOE(d.due)}</small></li>`
@@ -331,9 +285,7 @@
         `;
 
         } else {
-            // Case 3: 다가올 마감일이 있을 경우 (기존 로직 유지)
             if (item.deadlines.length === 1) {
-                // 3-1. 마감일이 정확히 하나일 경우
                 const singleDeadline = item.deadlines[0];
                 deadlineDisplayHTML = `
                 <div>
@@ -343,7 +295,6 @@
                 </div>
             `;
             } else {
-                // 3-2. 마감일이 여러 개일 경우
                 const nextDeadlineDetails = item.deadlines.find(d => d.due.getTime() === item.nextDue.getTime());
                 const deadlineType = nextDeadlineDetails ? nextDeadlineDetails.type : 'Next Deadline';
                 const summaryText = `<strong>${deadlineType}:</strong> ${formatDateAOE(item.nextDue)}`;
@@ -460,9 +411,6 @@
     }
 
     // --- UI & EVENT HANDLING ---
-    /**
-     * Scans all conference data to dynamically build the category and subfield filter options.
-     */
     function rebuildFilters() {
         const categoryFilter = QS("#categoryFilter");
         const subfieldFilter = QS("#subfieldFilter");
@@ -509,9 +457,6 @@
         updateSubfieldFilter();
     }
 
-    /**
-     * Attaches event listeners to all user controls (search, filters, theme toggle, etc.).
-     */
     function bindControls() {
         const on = (sel, type, handler) => {
             const el = QS(sel);
@@ -561,36 +506,40 @@
         }).format(date) + " (AOE)";
     }
 
+    // ✅ [수정] dBadge: 로컬 자정 기준 D-day 계산 + 지난 마감일은 D+ 표시
     function dBadge(item) {
         if (item.status === "coming_soon") {
             return `<span class="badge deadline-badge badge-comingsoon">Coming Soon!</span>`;
         }
-        if (!item.nextDue) {
-            return `<span class="badge deadline-badge badge-closed">Closed</span>`;
-        }
+
         const now = new Date();
 
-        // ✅ 사용자 로컬 시간 기준 오늘 자정 계산
-        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        // 마감일이 모두 지난 경우: 가장 최근 마감일 기준으로 D+ 표시
+        if (!item.nextDue) {
+            if (item.deadlines && item.deadlines.length > 0) {
+                const lastDeadline = item.deadlines.reduce((latest, d) => d.due > latest.due ? d : latest);
+                const diffDays = calcDiffDays(lastDeadline.due); // 음수값
+                const daysPast = Math.abs(diffDays);
+                return `<span class="badge deadline-badge badge-closed">D+${daysPast}</span>`;
+            }
+            return `<span class="badge deadline-badge badge-closed">Closed</span>`;
+        }
 
-        // ✅ 마감일도 사용자 로컬 시간 기준 자정으로 변환
-        const deadlineMidnight = new Date(item.nextDue.getFullYear(), item.nextDue.getMonth(), item.nextDue.getDate(), 0, 0, 0, 0);
-        // 단, nextDue는 UTC 기반이므로 로컬 날짜로 변환
-        const deadlineLocal = new Date(item.nextDue.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-        const deadlineMidnightLocal = new Date(deadlineLocal.getFullYear(), deadlineLocal.getMonth(), deadlineLocal.getDate(), 0, 0, 0, 0);
+        // 다가올 마감일이 있는 경우: 로컬 자정 기준 D-day 계산
+        const diffDays = calcDiffDays(item.nextDue);
 
-        const diffMs = deadlineMidnightLocal - todayMidnight;
-        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) {
+            // 오늘이 마감일 (아직 실제 시각은 안 지남)
+            return `<span class="badge deadline-badge badge-soon">D-DAY</span>`;
+        }
 
-        // D-DAY: 마감일이 오늘이거나 지났지만 실제 시각은 아직 안 지남
-        if (diffDays <= 0 && item.nextDue > now) {
-            const cls = "badge-soon";
-            return `<span class="badge deadline-badge ${cls}">D-DAY</span>`;
+        if (diffDays < 0) {
+            // 자정 기준으로는 지났지만 nextDue가 아직 미래인 엣지케이스 방어
+            return `<span class="badge deadline-badge badge-soon">D-DAY</span>`;
         }
 
         const cls = diffDays <= 7 ? "badge-soon" : "badge-upcoming";
-        const dayText = diffDays < 1 ? 'D-DAY' : `D-${diffDays}`;
-        return `<span class="badge deadline-badge ${cls}">${dayText}</span>`;
+        return `<span class="badge deadline-badge ${cls}">D-${diffDays}</span>`;
     }
 
     function renderTagChips(tags) {
@@ -642,18 +591,10 @@
         return d > 0 ? `${d}D ${hhmmss}` : hhmmss;
     }
 
-    /**
-     * Generates a calendar link for Google or Outlook based on event details.
-     * @param {string} type - 'google' or 'outlook'.
-     * @param {object} eventDetails - An object with event properties.
-     * @returns {string} The generated calendar link.
-     */
     function generateCalendarLink(type, eventDetails) {
         const toUTCFormat = (dateStr) => {
             if (!dateStr) return '';
             const d = new Date(dateStr);
-            // toISOString() -> "2025-12-25T00:00:00.000Z"
-            // .replace(/-|:|\.\d+/g, '') -> "20251225T000000Z"
             return d.toISOString().replace(/-|:|\.\d+/g, '');
         };
 
@@ -674,11 +615,6 @@
         return '#';
     }
 
-    /**
-     * Generates the content for a universal .ics calendar file.
-     * @param {object} eventDetails - An object with event properties.
-     * @returns {string} The content of the .ics file.
-     */
     function generateICSContent(eventDetails) {
         const toUTCFormat = (dateStr) => {
             if (!dateStr) return '';
@@ -704,10 +640,6 @@
         ].join('\n');
     }
 
-    /**
-     * Triggers the download of a dynamically generated .ics file.
-     * @param {object} item - The conference object.
-     */
     function downloadICSFile(eventDetails) {
         const icsContent = generateICSContent(eventDetails);
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
@@ -715,7 +647,6 @@
 
         const link = document.createElement('a');
         link.href = url;
-        // 파일 이름에 특수문자 제거
         const safeFileName = eventDetails.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         link.setAttribute('download', `${safeFileName}.ics`);
         document.body.appendChild(link);
@@ -725,9 +656,6 @@
     }
 
     // --- INITIALIZATION ---
-    /**
-     * Main entry point: runs when the DOM is fully loaded.
-     */
     document.addEventListener("DOMContentLoaded", () => {
         parseQuery();
         bindControls();
@@ -758,7 +686,6 @@
             let eventDetails;
 
             if (eventType === 'conference') {
-                // '학회 기간' ICS 파일 생성
                 eventDetails = {
                     id: `${item.id}-conference`,
                     title: item.name,
@@ -768,7 +695,6 @@
                     description: `Conference Website: ${item.site || 'N/A'}`
                 };
             } else if (eventType === 'deadline') {
-                // '개별 마감일' ICS 파일 생성
                 const deadlineIndex = parseInt(link.getAttribute('data-deadline-index'), 10);
                 const deadline = item.deadlines[deadlineIndex];
                 if (!deadline) return;
@@ -788,10 +714,8 @@
             }
         });
 
-        // --- Suggestion Modal & Form Logic (FINAL & FIXED) ---
+        // --- Suggestion Modal & Form Logic ---
 
-        // --- UI Elements ---
-        // 'Add Conference' Modal Elements
         const suggestModal = QS('#suggestModal');
         const suggestionForm = QS("#suggestionForm");
         const subfieldsContainer = QS('#subfieldsContainer');
@@ -799,7 +723,6 @@
         const suggestionDeadlinesContainer = QS('#suggestionDeadlinesContainer');
         const addSuggestionDeadlineBtn = QS('#addSuggestionDeadlineBtn');
 
-        // 'Suggest an Edit' Modal Elements
         const suggestEditModalEl = QS('#suggestEditModal');
         const suggestEditForm = QS('#suggestEditForm');
         const suggestEditCategoryInput = QS('#suggestEditCategory');
@@ -808,9 +731,6 @@
         const suggestEditDeadlinesContainer = QS('#suggestEditDeadlinesContainer');
         const addSuggestEditDeadlineBtn = QS('#addSuggestEditDeadlineBtn');
 
-        // --- Helper Functions ---
-
-        // Helper for 'Add Conference' Modal
         const addSubfieldInput = () => {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
@@ -839,7 +759,6 @@
             suggestionDeadlinesContainer.appendChild(div);
         };
 
-        // Helper for 'Suggest an Edit' Modal
         function addSuggestEditSubfieldInput(value = '') {
             const div = document.createElement('div');
             div.className = 'input-group mb-2';
@@ -861,8 +780,6 @@
             suggestEditDeadlinesContainer.appendChild(div);
         }
 
-
-        // --- Event Listeners for 'Add Conference' Modal ---
         if (addSubfieldBtn) {
             addSubfieldBtn.addEventListener('click', addSubfieldInput);
         }
@@ -888,7 +805,6 @@
                 suggestionForm?.reset();
                 QS('#suggestionAlert')?.classList.add('d-none');
                 resetSubfieldInputs();
-                // Also reset deadlines for this modal
                 if (suggestionDeadlinesContainer) {
                     suggestionDeadlinesContainer.innerHTML = `
                 <div class="input-group mb-2">
@@ -960,8 +876,6 @@
             });
         }
 
-
-        // --- Event Listeners for 'Suggest an Edit' Modal ---
         suggestEditModalEl.addEventListener('show.bs.modal', (event) => {
             const button = event.relatedTarget;
             const confId = button.getAttribute('data-conf-id');
@@ -995,7 +909,7 @@
             if (item.deadlines && item.deadlines.length > 0) {
                 item.deadlines.forEach(d => addSuggestEditDeadlineInput(d.type, d.due));
             } else {
-                addSuggestEditDeadlineInput(); // 마감일 없으면 빈 칸 하나 추가
+                addSuggestEditDeadlineInput();
             }
         });
 
