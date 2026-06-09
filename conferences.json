@@ -14,7 +14,12 @@
       "conf_start": "2026-01-20",
       "conf_end": "2026-01-27"
     },
-    "deadlines": "2025-07-25T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-07-26T11:59:00Z"
+      }
+    ],
     "site": "https://aaai.org/Conferences/AAAI-26/",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -33,7 +38,7 @@
       "conf_start": "2026-07-02",
       "conf_end": "2026-07-07"
     },
-    "deadlines": "",
+    "deadlines": [],
     "site": "https://2026.aclweb.org",
     "note": "",
     "timezone": "UTC",
@@ -54,7 +59,12 @@
       "conf_start": "2025-11-05",
       "conf_end": "2025-11-09"
     },
-    "deadlines": "2025-05-20T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-05-21T11:59:00Z"
+      }
+    ],
     "site": "https://2025.emnlp.org",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -77,7 +87,12 @@
       "conf_start": "2025-12-02",
       "conf_end": "2025-12-07"
     },
-    "deadlines": "2025-05-11T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-05-12T11:59:00Z"
+      }
+    ],
     "site": "https://neurips.cc/Conferences/2025",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -98,7 +113,12 @@
       "conf_start": "2026-04-23",
       "conf_end": "2026-04-27"
     },
-    "deadlines": "2025-09-19T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-09-20T11:59:00Z"
+      }
+    ],
     "site": "https://iclr.cc/",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -117,7 +137,12 @@
       "conf_start": "2025-09-23",
       "conf_end": "2025-09-27"
     },
-    "deadlines": "2025-02-13T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-02-14T11:59:00Z"
+      }
+    ],
     "site": "https://conferences.miccai.org/2025/en/default.asp",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -137,7 +162,12 @@
       "conf_start": "2026-04-13",
       "conf_end": "2026-04-17"
     },
-    "deadlines": "2025-09-04T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-09-05T11:59:00Z"
+      }
+    ],
     "site": "https://chi2026.acm.org/",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -158,7 +188,7 @@
       "conf_start": "2026-07-19",
       "conf_end": "2026-07-23"
     },
-    "deadlines": "",
+    "deadlines": [],
     "site": "https://s2026.siggraph.org/",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -177,7 +207,12 @@
       "conf_start": "2026-03-15",
       "conf_end": "2026-03-20"
     },
-    "deadlines": "2025-10-23T23:59:00Z",
+    "deadlines": [
+      {
+        "type": "Deadline",
+        "due": "2025-10-24T11:59:00Z"
+      }
+    ],
     "site": "https://summit.aps.org/",
     "note": "",
     "timezone": "AOE (UTC−12)",
@@ -197,7 +232,7 @@
       "conf_start": "2026-07-12",
       "conf_end": "2026-07-16"
     },
-    "deadlines": "",
+    "deadlines": [],
     "site": "https://www.iscb.org/ismb2026/home",
     "note": "",
     "timezone": "AOE (UTC−12)",

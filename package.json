@@ -1,0 +1,11 @@
+{
+  "name": "conference-deadlines",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A static, Supabase-backed academic conference deadline tracker.",
+  "scripts": {
+    "smoke": "node scripts/smoke-test.mjs",
+    "check": "node scripts/smoke-test.mjs"
+  },
+  "license": "CC-BY-NC-SA-4.0"
+}

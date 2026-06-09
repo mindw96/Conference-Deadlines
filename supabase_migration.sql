@@ -1,9 +1,14 @@
--- This script migrates data from the old conferences.json to your Supabase tables.
+-- This script seeds conference data into your Supabase tables.
 --
 -- Instructions:
--- 1. In your Supabase project, go to the "SQL Editor".
--- 2. Create a "New query".
--- 3. Paste the content of this file and click "RUN".
+-- 1. Run supabase_schema.sql first.
+-- 2. In your Supabase project, go to the "SQL Editor".
+-- 3. Create a "New query".
+-- 4. Paste the content of this file and click "RUN".
+--
+-- Deadline convention:
+-- Store deadline timestamps as UTC instants. A paper deadline shown as
+-- YYYY-MM-DD 23:59 AOE (UTC-12) is stored as YYYY-MM-(DD+1) 11:59:00Z.
 
 -- Clear existing data to prevent duplicates if you run this multiple times.
 TRUNCATE public.conferences, public.deadlines RESTART IDENTITY CASCADE;
@@ -23,11 +28,10 @@ INSERT INTO public.conferences (id, name, conf_start_date, conf_end_date, locati
 
 -- Insert data into the 'deadlines' table
 INSERT INTO public.deadlines (conference_id, deadline_type, due_date) VALUES
-('aaai-2026', 'Deadline', '2025-07-25T23:59:00Z'),
-('emnlp-2025', 'Deadline', '2025-05-20T23:59:00Z'),
-('neurips-2025', 'Deadline', '2025-05-11T23:59:00Z'),
-('iclr-2026', 'Deadline', '2025-09-19T23:59:00Z'),
-('miccai-2025', 'Deadline', '2025-02-13T23:59:00Z'),
-('chi-2026', 'Deadline', '2025-09-04T23:59:00Z'),
-('aps-2026', 'Deadline', '2025-10-23T23:59:00Z');
-
+('aaai-2026', 'Deadline', '2025-07-26T11:59:00Z'),
+('emnlp-2025', 'Deadline', '2025-05-21T11:59:00Z'),
+('neurips-2025', 'Deadline', '2025-05-12T11:59:00Z'),
+('iclr-2026', 'Deadline', '2025-09-20T11:59:00Z'),
+('miccai-2025', 'Deadline', '2025-02-14T11:59:00Z'),
+('chi-2026', 'Deadline', '2025-09-05T11:59:00Z'),
+('aps-2026', 'Deadline', '2025-10-24T11:59:00Z');

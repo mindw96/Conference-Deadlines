@@ -1,39 +1,7 @@
 (function () {
-    const QS = s => document.querySelector(s);
-
-    function formatDateAOE(date) {
-        if (!date) return 'N/A';
-        // Date 객체가 아닐 경우 변환
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-        return new Intl.DateTimeFormat('sv-SE', {
-            timeZone: 'Etc/GMT+12', // AOE timezone
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', hour12: false
-        }).format(dateObj) + " (AOE)";
-    }
-
-    function formatForDateTimeLocalInput(date) {
-        if (!date) return '';
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-        const formatted = new Intl.DateTimeFormat('sv-SE', {
-            timeZone: 'Etc/GMT+12', // AOE
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hourCycle: 'h23'
-        }).format(dateObj);
-
-        return formatted.replace(' ', 'T');
-    }
-
-    // --- SUPABASE SETUP ---
-    const SUPABASE_URL = 'https://tavlqhidtjxgwclhjkje.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhdmxxaGlkdGp4Z3djbGhqa2plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMTAwODIsImV4cCI6MjA3MTU4NjA4Mn0.8iIDnSyPPhcLm10VBfHQM3SkXvxpEJRxxtMqct-goyw';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const CD = window.ConferenceDeadlines;
+    const QS = CD.QS;
+    const supabase = CD.api.getClient();
 
     // --- UI ELEMENTS ---
     const loginView = QS('#login-view');
@@ -56,8 +24,8 @@
         const div = document.createElement('div');
         div.className = 'input-group mb-2 area-group';
         div.innerHTML = `
-            <input type="text" class="form-control area-category" placeholder="Category (e.g., AI)" value="${category}">
-            <input type="text" class="form-control area-subfields" placeholder="Subfields (comma separated)" value="${subfields}">
+            <input type="text" class="form-control area-category" placeholder="Category (e.g., AI)" value="${CD.escapeAttr(category)}">
+            <input type="text" class="form-control area-subfields" placeholder="Subfields (comma separated)" value="${CD.escapeAttr(subfields)}">
             <button class="btn btn-outline-danger remove-area-btn" type="button">&times;</button>
         `;
         areasContainer.appendChild(div);
@@ -66,10 +34,10 @@
     function addDeadlineInput(type = '', date = '') {
         const div = document.createElement('div');
         div.className = 'input-group mb-2 deadline-group';
-        const formattedDate = formatForDateTimeLocalInput(date);
+        const formattedDate = CD.formatForDateTimeLocalInput(date);
         div.innerHTML = `
-            <input type="text" class="form-control deadline-type" placeholder="Deadline Type" value="${type}">
-            <input type="datetime-local" class="form-control deadline-date" value="${formattedDate}">
+            <input type="text" class="form-control deadline-type" placeholder="Deadline Type" value="${CD.escapeAttr(type)}">
+            <input type="datetime-local" class="form-control deadline-date" value="${CD.escapeAttr(formattedDate)}">
             <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
         `;
         deadlinesContainer.appendChild(div);
@@ -105,7 +73,7 @@
         const { data, error } = await supabase.from('conferences').select('*').order('name', { ascending: true });
         if (error) {
             console.error('Error fetching conferences:', error);
-            conferenceListDiv.innerHTML = `<div class="alert alert-danger">Failed to load conferences.</div>`;
+            conferenceListDiv.innerHTML = CD.createErrorHTML('Failed to load conferences.');
             return;
         }
         renderConferences(data);
@@ -128,7 +96,7 @@
             const suggestionValue = suggestion[field] || '';
 
             if (originalValue !== suggestionValue) {
-                changes.push(`<b>${field}:</b> "${originalValue}" → "${suggestionValue}"`);
+                changes.push(`<b>${CD.escapeHTML(field)}:</b> "${CD.escapeHTML(originalValue)}" → "${CD.escapeHTML(suggestionValue)}"`);
             }
         });
 
@@ -170,13 +138,13 @@
         noSuggestionsDiv.classList.add('d-none');
         suggestionsList.innerHTML = suggestions.map(s => {
             const isEdit = s.is_edit;
-            const editBadge = isEdit ? `<span class="badge bg-info">Edit Suggestion</span>` : '';
-            const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${s.target_conference_id}</small></p>` : '';
+            const editBadge = isEdit ? '<span class="badge bg-info">Edit Suggestion</span>' : '';
+            const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${CD.escapeHTML(s.target_conference_id)}</small></p>` : '';
 
             // Deadlines를 보기 좋게 표시
             const deadlinesText = s.deadlines
-                ? s.deadlines.map(d => `${d.type}: ${formatDateAOE(d.due)}`).join('<br>')
-                : formatDateAOE(s.deadline_date);
+                ? s.deadlines.map(d => `${CD.escapeHTML(d.type)}: ${CD.escapeHTML(CD.formatDateAOE(d.due))}`).join('<br>')
+                : CD.escapeHTML(CD.formatDateAOE(s.deadline_date));
 
             let changesHTML = '';
             if (isEdit && s.target_conference_id) {
@@ -196,19 +164,20 @@
                 }
             }
 
-            const categoryHTML = s.category ? `<p class="card-text mb-1"><strong>Category:</strong> ${s.category}</p>` : '';
-            const subfieldsHTML = s.subfields ? `<p class="card-text mb-1"><strong>Subfields:</strong> ${s.subfields}</p>` : '';
+            const categoryHTML = s.category ? `<p class="card-text mb-1"><strong>Category:</strong> ${CD.escapeHTML(s.category)}</p>` : '';
+            const subfieldsHTML = s.subfields ? `<p class="card-text mb-1"><strong>Subfields:</strong> ${CD.escapeHTML(s.subfields)}</p>` : '';
+            const siteURL = CD.safeURL(s.site_url);
 
             return `
-                <div class="card" data-id="${s.id}">
+                <div class="card" data-id="${CD.escapeAttr(s.id)}">
                     <div class="card-body">
                         <h5 class="card-title d-flex justify-content-between">
-                            ${s.name} ${editBadge}
+                            ${CD.escapeHTML(s.name)} ${editBadge}
                         </h5>
                         ${targetInfo}
-                        <p class="card-text mb-1"><strong>URL:</strong> <a href="${s.site_url}" target="_blank" rel="noopener">${s.site_url}</a></p>
-                        <p class="card-text mb-1"><strong>Location:</strong> ${s.location || 'N/A'}</p>
-                        <p class="card-text mb-1"><strong>Dates:</strong> ${s.conf_start_date || 'N/A'} to ${s.conf_end_date || 'N/A'}</p>
+                        <p class="card-text mb-1"><strong>URL:</strong> <a href="${CD.escapeAttr(siteURL)}" target="_blank" rel="noopener">${CD.escapeHTML(s.site_url)}</a></p>
+                        <p class="card-text mb-1"><strong>Location:</strong> ${CD.escapeHTML(s.location || 'N/A')}</p>
+                        <p class="card-text mb-1"><strong>Dates:</strong> ${CD.escapeHTML(s.conf_start_date || 'N/A')} to ${CD.escapeHTML(s.conf_end_date || 'N/A')}</p>
                         ${categoryHTML}
                         ${subfieldsHTML}
                         <p class="card-text mb-1"><strong>Deadlines:</strong><br><small>${deadlinesText}</small></p>
@@ -231,12 +200,12 @@
         }
         noConferencesDiv.classList.add('d-none');
         conferenceListDiv.innerHTML = conferences.map(conf => `
-            <div class="card" data-id="${conf.id}">
+            <div class="card" data-id="${CD.escapeAttr(conf.id)}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h5 class="card-title mb-1">${conf.name}</h5>
-                            <p class="card-text text-muted small">${conf.location || 'Location not set'}</p>
+                            <h5 class="card-title mb-1">${CD.escapeHTML(conf.name)}</h5>
+                            <p class="card-text text-muted small">${CD.escapeHTML(conf.location || 'Location not set')}</p>
                         </div>
                         <div class="d-flex gap-2 align-items-start">
                             <button class="btn btn-outline-primary btn-sm edit-btn">Edit</button>
@@ -426,8 +395,9 @@
         deadlinesContainer.querySelectorAll('.deadline-group').forEach(group => {
             const type = group.querySelector('.deadline-type').value.trim();
             const date = group.querySelector('.deadline-date').value;
-            if (type && date) {
-                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: new Date(date + ':00-12:00').toISOString() });
+            const dueIso = CD.fromAoeDateTimeLocalToIso(date);
+            if (type && dueIso) {
+                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: dueIso });
             }
         });
 
@@ -473,7 +443,7 @@
 
             } catch (error) {
                 console.error('Error fetching admin data:', error);
-                suggestionsList.innerHTML = `<div class="alert alert-danger">Failed to load data: ${error.message}</div>`;
+                suggestionsList.innerHTML = CD.createErrorHTML(`Failed to load data: ${error.message}`);
             }
         } else {
             loginView.classList.remove('d-none');
