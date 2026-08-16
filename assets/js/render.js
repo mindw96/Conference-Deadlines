@@ -7,9 +7,9 @@
         let html = '';
 
         for (const category in areas) {
-            html += `<span class="badge rounded-pill badge-area badge-area-default">${CD.escapeHTML(category)}</span>`;
+            html += `<span class="cd-badge cd-badge-area">${CD.escapeHTML(category)}</span>`;
             (areas[category] || []).forEach(subfield => {
-                html += `<span class="badge rounded-pill text-bg-light border">${CD.escapeHTML(subfield)}</span>`;
+                html += `<span class="cd-badge">${CD.escapeHTML(subfield)}</span>`;
             });
         }
 
@@ -19,63 +19,49 @@
     function renderTagChips(tags) {
         if (!tags || !tags.length) return '';
         return tags
-            .map(tag => `<span class="badge rounded-pill text-bg-light border">${CD.escapeHTML(tag)}</span>`)
+            .map(tag => `<span class="cd-badge">${CD.escapeHTML(tag)}</span>`)
             .join('');
     }
 
-    function renderDeadlineList(deadlines, now) {
-        return deadlines.map(deadline => {
-            const textClass = deadline.due < now ? ' text-body-secondary' : '';
-            return `
-                <li class="list-group-item border-0 py-1${textClass}">
-                    <small><strong>${CD.escapeHTML(deadline.type)}:</strong> ${CD.escapeHTML(CD.formatDateAOE(deadline.due))}</small>
-                </li>
-            `;
-        }).join('');
+    function nextDeadline(item) {
+        if (!item.nextDue) return null;
+        return (item.deadlines || []).find(deadline => deadline.due.getTime() === item.nextDue.getTime()) || null;
     }
 
-    function renderDeadlineDisplay(item) {
-        const deadlines = item.deadlines || [];
-        const now = new Date();
+    function renderDeadlineList(deadlines, now) {
+        return deadlines.map(deadline => `
+            <li${deadline.due < now ? ' class="is-past"' : ''}>
+                <span>${CD.escapeHTML(deadline.type)}</span>
+                <span class="cd-mono">${CD.escapeHTML(CD.formatDateAOEShort(deadline.due))}</span>
+            </li>
+        `).join('');
+    }
 
-        if (deadlines.length === 0) {
-            return '<span class="small text-body-secondary">Deadlines Coming Soon!</span>';
+    // Footer left column: the next deadline stamp, or why there isn't one.
+    function renderDeadlineInfo(item) {
+        const deadlines = item.deadlines || [];
+
+        if (!deadlines.length) {
+            return '<div class="cd-eyebrow">Deadlines to be announced</div>';
         }
+
+        const toggle = deadlines.length > 1
+            ? `<button type="button" class="cd-more js-toggle-deadlines" aria-expanded="false">
+                    All ${deadlines.length} <i class="bi bi-chevron-down" aria-hidden="true"></i>
+               </button>`
+            : '';
 
         if (!item.nextDue) {
             return `
-                <details class="deadline-details">
-                    <summary class="small"><span class="text-body-secondary">All deadlines have passed</span></summary>
-                    <ul class="list-group list-group-flush mt-2">
-                        ${renderDeadlineList(deadlines, now)}
-                    </ul>
-                </details>
+                <div class="cd-eyebrow">Last deadline</div>
+                <span class="cd-deadline-next is-past">All deadlines have passed</span>
+                ${toggle}
             `;
         }
-
-        if (deadlines.length === 1) {
-            const deadline = deadlines[0];
-            return `
-                <div>
-                    <span class="small">
-                        <strong>${CD.escapeHTML(deadline.type)}:</strong> ${CD.escapeHTML(CD.formatDateAOE(deadline.due))}
-                    </span>
-                </div>
-            `;
-        }
-
-        const nextDeadline = deadlines.find(deadline => deadline.due.getTime() === item.nextDue.getTime());
-        const deadlineType = nextDeadline ? nextDeadline.type : 'Next Deadline';
 
         return `
-            <details class="deadline-details">
-                <summary class="small">
-                    <strong>${CD.escapeHTML(deadlineType)}:</strong> ${CD.escapeHTML(CD.formatDateAOE(item.nextDue))}
-                </summary>
-                <ul class="list-group list-group-flush mt-2">
-                    ${renderDeadlineList(deadlines, now)}
-                </ul>
-            </details>
+            <span class="cd-deadline-next">${CD.escapeHTML(CD.formatDateAOEShort(item.nextDue))}</span>
+            ${toggle}
         `;
     }
 
@@ -91,7 +77,7 @@
                 const outlookLink = CD.calendar.generateCalendarLink('outlook', deadlineEvent);
 
                 return `
-                    <li><h6 class="dropdown-header ps-3 text-body-secondary">${CD.escapeHTML(deadline.type)}</h6></li>
+                    <li><h6 class="dropdown-header">${CD.escapeHTML(deadline.type)}</h6></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(googleLink)}" target="_blank" rel="noopener">Google Calendar</a></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(outlookLink)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
                     <li><a class="dropdown-item ics-download-link" href="#"
@@ -106,10 +92,12 @@
 
         return `
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Add to calendar">
-                    <i class="bi bi-calendar2-plus"></i>
+                <button class="cd-icon-btn has-caret" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    title="Add to calendar" aria-label="Add to calendar">
+                    <i class="bi bi-calendar2-plus" aria-hidden="true"></i>
+                    <i class="bi bi-chevron-down" aria-hidden="true"></i>
                 </button>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu dropdown-menu-end">
                     <li><h6 class="dropdown-header">Conference Schedule</h6></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(conferenceGoogleLink)}" target="_blank" rel="noopener">Google Calendar</a></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(conferenceOutlookLink)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
@@ -125,74 +113,110 @@
 
     function deadlineBadge(item) {
         if (item.status === 'coming_soon') {
-            return '<span class="badge deadline-badge badge-comingsoon">Coming Soon!</span>';
+            return '<span class="cd-deadline-badge is-comingsoon">Coming Soon</span>';
         }
 
         if (!item.nextDue) {
             if (item.deadlines && item.deadlines.length > 0) {
                 const lastDeadline = item.deadlines.reduce((latest, deadline) => deadline.due > latest.due ? deadline : latest);
                 const daysPast = Math.abs(CD.calcDiffDays(lastDeadline.due));
-                return `<span class="badge deadline-badge badge-closed">D+${CD.escapeHTML(daysPast)}</span>`;
+                return `<span class="cd-deadline-badge is-closed">D+${CD.escapeHTML(daysPast)}</span>`;
             }
-            return '<span class="badge deadline-badge badge-closed">Closed</span>';
+            return '<span class="cd-deadline-badge is-closed">Closed</span>';
         }
 
         const diffDays = CD.calcDiffDays(item.nextDue);
         if (diffDays <= 0) {
-            return '<span class="badge deadline-badge badge-soon">D-DAY</span>';
+            return '<span class="cd-deadline-badge is-today">D-DAY</span>';
         }
 
-        const cls = diffDays <= 7 ? 'badge-soon' : 'badge-upcoming';
-        return `<span class="badge deadline-badge ${cls}">D-${CD.escapeHTML(diffDays)}</span>`;
+        const cls = diffDays <= 7 ? 'is-soon' : 'is-upcoming';
+        return `<span class="cd-deadline-badge ${cls}">D-${CD.escapeHTML(diffDays)}</span>`;
     }
 
     function renderCard(item) {
+        const now = new Date();
         const site = CD.safeURL(item.site);
+        const next = nextDeadline(item);
+        const deadlines = item.deadlines || [];
+
         const websiteButton = site !== '#'
-            ? `
-                <a href="${CD.escapeAttr(site)}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"
-                    data-bs-toggle="tooltip" title="Visit Website" aria-label="Visit ${CD.escapeAttr(item.name)} website">
-                    <i class="bi bi-box-arrow-up-right"></i>
-                </a>
-            `
-            : '';
-        const countdownHTML = item.nextDue
-            ? `<div class="js-countdown small mt-1" data-deadline="${CD.escapeAttr(item.nextDue.toISOString())}">--:--:--</div>`
+            ? `<a class="cd-icon-btn" href="${CD.escapeAttr(site)}" target="_blank" rel="noopener"
+                    title="Visit Website" aria-label="Visit ${CD.escapeAttr(item.name)} website">
+                    <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+               </a>`
             : '';
 
+        const countdownHTML = item.nextDue
+            ? `<div class="cd-countdown js-countdown" data-deadline="${CD.escapeAttr(item.nextDue.toISOString())}">--:--:--</div>`
+            : '';
+
+        const dateRange = CD.formatConfRange(item.dates?.conf_start, item.dates?.conf_end);
+
         return `
-            <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h5 class="card-title mb-1">${CD.escapeHTML(item.name)}</h5>
-                            <div class="text-muted small">${CD.escapeHTML(item.location || '')}</div>
-                            <div class="text-muted small">${CD.escapeHTML(item.dates?.conf_start || '')} ~ ${CD.escapeHTML(item.dates?.conf_end || '')}</div>
+            <article class="cd-card">
+                <div class="cd-card-top">
+                    <div class="cd-card-ident">
+                        <h5 class="cd-card-title">${CD.escapeHTML(item.name)}</h5>
+                        <div class="cd-card-meta">${CD.escapeHTML(item.location || '')}</div>
+                        ${dateRange ? `<div class="cd-card-meta cd-card-meta-dim">${CD.escapeHTML(dateRange)}</div>` : ''}
+                    </div>
+                    <div class="cd-card-status">
+                        ${deadlineBadge(item)}
+                        ${next ? `<div class="cd-eyebrow">${CD.escapeHTML(next.type)}</div>` : ''}
+                        ${countdownHTML}
+                    </div>
+                </div>
+
+                <div class="cd-taglist">
+                    ${renderAreaBadges(item.areas)}
+                    ${renderTagChips(item.tags)}
+                </div>
+
+                <div class="cd-card-foot">
+                    <div class="cd-card-foot-row">
+                        <div class="cd-deadline-info">${renderDeadlineInfo(item)}</div>
+                        <div class="cd-actions">
+                            ${websiteButton}
+                            ${renderCalendarMenu(item)}
+                            <button class="cd-icon-btn" type="button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#suggestEditModal"
+                                data-conf-id="${CD.escapeAttr(item.id)}"
+                                title="Suggest an Edit"
+                                aria-label="Suggest an edit for ${CD.escapeAttr(item.name)}">
+                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                            </button>
                         </div>
-                        <div class="text-end">${deadlineBadge(item)}${countdownHTML}</div>
                     </div>
-                    <div class="mb-2 tag-list">
-                        ${renderAreaBadges(item.areas)}
-                        ${renderTagChips(item.tags)}
-                    </div>
-                    <div class="mb-2">
-                        ${renderDeadlineDisplay(item)}
-                    </div>
-                    <div class="d-flex gap-2">
-                        ${websiteButton}
-                        ${renderCalendarMenu(item)}
-                        <button class="btn btn-sm btn-outline-secondary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#suggestEditModal"
-                            data-conf-id="${CD.escapeAttr(item.id)}"
-                            title="Suggest an Edit"
-                            aria-label="Suggest an edit for ${CD.escapeAttr(item.name)}">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                    </div>
+                    ${deadlines.length > 1
+                ? `<ul class="cd-deadline-list" hidden>${renderDeadlineList(deadlines, now)}</ul>`
+                : ''}
                 </div>
             </article>
         `;
+    }
+
+    // The "All N" disclosure below the next-deadline stamp. Bound once on the
+    // grid container so it survives re-renders.
+    function bindDeadlineToggles(cardsContainer) {
+        cardsContainer.addEventListener('click', event => {
+            const toggle = event.target.closest('.js-toggle-deadlines');
+            if (!toggle) return;
+
+            const foot = toggle.closest('.cd-card-foot');
+            const list = foot ? CD.QS('.cd-deadline-list', foot) : null;
+            if (!list) return;
+
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            list.hidden = expanded;
+
+            const count = list.children.length;
+            toggle.innerHTML = expanded
+                ? `All ${count} <i class="bi bi-chevron-down" aria-hidden="true"></i>`
+                : 'Hide <i class="bi bi-chevron-down" aria-hidden="true"></i>';
+        });
     }
 
     function formatCountdown(ms) {
@@ -203,7 +227,7 @@
         const seconds = sec % 60;
         const pad = value => String(value).padStart(2, '0');
         const hhmmss = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-        return days > 0 ? `${days}D ${hhmmss}` : hhmmss;
+        return days > 0 ? `${days}d ${hhmmss}` : hhmmss;
     }
 
     function updateCountdowns(onExpire) {
@@ -218,11 +242,11 @@
             const diff = due - now;
             if (diff <= 0) {
                 el.textContent = '00:00:00';
-                el.classList.remove('text-danger');
+                el.classList.remove('is-urgent');
                 needsRerender = true;
             } else {
                 el.textContent = formatCountdown(diff);
-                el.classList.toggle('text-danger', diff <= 24 * 3600 * 1000);
+                el.classList.toggle('is-urgent', diff <= 24 * 3600 * 1000);
             }
         });
 
@@ -253,6 +277,7 @@
         renderAreaBadges,
         renderTagChips,
         deadlineBadge,
+        bindDeadlineToggles,
         formatCountdown,
         startCountdownTimer,
         stopCountdownTimer

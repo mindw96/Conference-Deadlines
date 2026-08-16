@@ -9,136 +9,125 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
     <link href="assets/css/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg border-bottom mb-4 sticky-top bg-body">
-        <div class="container-xxl">
-            <a class="navbar-brand fw-semibold" href="/">Conference Deadlines</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
-                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="about.html">About</a></li>
-                </ul>
-                <div class="d-flex gap-2 align-items-center">
-                    <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button">
-                        Dark/Light
-                    </button>
-                </div>
-            </div>
-        </div>
+    <nav class="cd-navbar cd-container">
+        <ul class="cd-nav-links">
+            <li><a class="cd-nav-link" href="/">Home</a></li>
+            <li><a class="cd-nav-link is-active" aria-current="page" href="about.html">About</a></li>
+        </ul>
+        <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false"
+            autocomplete="off">
+            <i class="bi bi-moon" id="themeToggleIcon" aria-hidden="true"></i>
+            <span id="themeToggleLabel">Dark</span>
+        </button>
     </nav>
 
-    <main class="container-xxl">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="text-center mb-5">
-                    <h1 class="display-5 fw-bold">About This Project</h1>
-                    <p class="lead text-muted">Tracking academic conference deadlines, made simple.</p>
+    <main class="cd-container">
+        <div class="cd-prose">
+            <h1>About This Project</h1>
+            <p class="cd-prose-lede">Tracking academic conference deadlines, made simple.</p>
+
+            <section class="cd-section">
+                <h3>About This Site</h3>
+                <p>
+                    As a graduate student at the UNIST NLP Lab, I began <strong>Conference Deadlines</strong> as a
+                    personal project to solve a simple problem: keeping track of the ever-growing list of conference
+                    deadlines. I decided to open-source the project to help graduate students and researchers stay
+                    organized and focused on their work.
+                </p>
+                <p>
+                    This website is built with modern web standards including HTML5, Bootstrap, and vanilla JavaScript,
+                    with all data served dynamically from a Supabase backend. This ensures the information is always
+                    up-to-date, fast, and easy to maintain. I got a lot of help from Google's Gemini throughout the
+                    development process.
+                </p>
+            </section>
+
+            <section class="cd-section">
+                <h3>How to Add a Conference</h3>
+                <p>
+                    We welcome contributions to keep our deadline list accurate and comprehensive. If you want to add
+                    or update a conference, you have two options:
+                </p>
+                <ol style="margin: 0; padding-left: 1.25rem; display: grid; gap: .75rem;">
+                    <li>
+                        <strong>Use the Suggestion Form (Recommended):</strong> The easiest way is to click the
+                        'Request to add a Conference' button on the homepage and fill out the form.
+                    </li>
+                    <li>
+                        <strong>Send me an email:</strong> If you're not familiar with the methods above, simply send
+                        an email to <a href="mailto:mindw96@unist.ac.kr">mindw96@unist.ac.kr</a> with the official
+                        website link for the conference you'd like to add.
+                    </li>
+                </ol>
+            </section>
+
+            <section class="cd-section">
+                <h3>Our Lab</h3>
+                <p>Here is the lab I'm a part of. Please get in touch if you find our research interesting!</p>
+                <p>
+                    The <a href="https://nlp.unist.ac.kr/" target="_blank" rel="noopener">UNIST NLP Lab</a> is
+                    developing <strong>System 2-based language AI</strong> that thinks and learns like humans. We're
+                    going beyond simple recall to build AI with real <strong>understanding, reasoning, and learning
+                        capabilities</strong>.
+                </p>
+                <div class="cd-panel">
+                    <div class="cd-eyebrow" style="margin-bottom: .625rem;">Current research focus</div>
+                    <ul>
+                        <li>Editing and leveraging knowledge in unstructured text</li>
+                        <li>Efficient reasoning based on knowledge learning</li>
+                        <li>Integrating external memory with parameter-efficient LLMs</li>
+                        <li>Progressive knowledge expansion via Mixture-of-Experts (MoE)</li>
+                    </ul>
                 </div>
-
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="card-title fw-semibold">About This Site</h3>
-                        <p>
-                            As a graduate student at the UNIST NLP Lab, I began <strong>Conference Deadlines</strong> as
-                            a personal project to solve a simple problem: keeping track of the ever-growing list of
-                            conference deadlines. I decided to open-source the project to help graduate students and
-                            researchers stay organized and focused on their work.
-                        </p>
-                        <p>
-                            This website is built with modern web standards including HTML5, Bootstrap, and
-                            vanilla JavaScript, with all data served dynamically from a Supabase backend. This ensures
-                            the information is always up-to-date, fast, and easy to maintain. I got a lot of help from
-                            Google's Gemini throughout the development process.
-                        </p>
-                    </div>
-                </div>
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="card-title fw-semibold">How to Add a Conference</h3>
-                        <p>
-                            We welcome contributions to keep our deadline list accurate and comprehensive. If you
-                            want to add or update a conference, you have two options:
-                        </p>
-                        <ol class="list-group list-group-flush list-group-numbered">
-                            <li class="list-group-item ps-0">
-                                <strong>Use the Suggestion Form (Recommended):</strong> The easiest way is to click the
-                                'Request to add a Conference' button on the homepage and fill out the form.
-                            </li>
-                            <li class="list-group-item ps-0">
-                                <strong>Send me an email:</strong> If you're not familiar with the methods above, simply
-                                send an email to
-                                <a href="mailto:mindw96@unist.ac.kr"><strong>mindw96@unist.ac.kr</strong></a>
-                                with the official website link for the conference you'd like to add.
-                            </li>
-                        </ol>
-                    </div>
-                </div>
-
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h3 class="card-title fw-semibold">Our Lab</h3>
-                        <p>Here is the lab I'm a part of. Please get in touch if you find our research interesting!</p>
-
-                        <p>
-                            The <a href="https://nlp.unist.ac.kr/" target="_blank" rel="noopener">UNIST NLP Lab</a>
-                            is developing <strong>System 2-based language AI</strong> that thinks and learns like
-                            humans.
-                            We're going beyond simple recall to build AI with real <strong>understanding, reasoning, and
-                                learning capabilities</strong>.
-                        </p>
-
-                        <p>Our current research focuses on:</p>
-                        <ul>
-                            <li><strong>Editing and leveraging knowledge in unstructured text</strong></li>
-                            <li><strong>Efficient reasoning based on knowledge learning</strong></li>
-                            <li><strong>Integrating external memory with parameter-efficient LLMs</strong>
-                            </li>
-                            <li><strong>Progressive knowledge expansion via Mixture-of-Experts (MoE)</strong></li>
-                        </ul>
-
-                        <p>
-                            We're building the <strong>foundational technologies</strong> for
-                            <strong>next-generation language intelligence</strong> that can truly learn and adapt like
-                            humans do.
-                        </p>
-                    </div>
-                </div>
-            </div>
+                <p>
+                    We're building the <strong>foundational technologies</strong> for <strong>next-generation language
+                        intelligence</strong> that can truly learn and adapt like humans do.
+                </p>
+            </section>
         </div>
-        <footer class="container-xxl pt-4 my-md-5 pt-md-5 border-top">
-            <small class="d-block mb-3 text-body-secondary">
-                An open-source project by a researcher, for researchers.
-                <br>
-                Contribute on <a class="link-secondary text-decoration-none"
-                    href="https://github.com/mindw96/Conference-Deadlines" target="_blank" rel="noopener">GitHub</a>
-                <br>
-                Contact at
-                <a class="link-secondary text-decoration-none" href="mailto:mindw96@unist.ac.kr">mindw96@unist.ac.kr</a>
-            </small>
-            <small class="d-block text-body-secondary mt-2">© 2025 Conference Deadlines</small>
+
+        <footer class="cd-footer">
+            <div>
+                An open-source project by a researcher, for researchers.<br>
+                Contribute on <a href="https://github.com/mindw96/Conference-Deadlines" target="_blank"
+                    rel="noopener">GitHub</a>
+                · Contact at <a href="mailto:mindw96@unist.ac.kr">mindw96@unist.ac.kr</a>
+            </div>
+            <div>© 2025 Conference Deadlines</div>
         </footer>
     </main>
 
     <script>
-        // Simple theme toggle logic for the About page
+        // Standalone theme toggle for the About page (no app bundle here).
         document.addEventListener("DOMContentLoaded", () => {
             const themeToggle = document.getElementById("themeToggle");
+            const icon = document.getElementById("themeToggleIcon");
+            const label = document.getElementById("themeToggleLabel");
+
+            const sync = () => {
+                const isDark = (document.documentElement.getAttribute("data-bs-theme") || "light") === "dark";
+                if (icon) icon.className = isDark ? "bi bi-sun" : "bi bi-moon";
+                if (label) label.textContent = isDark ? "Light" : "Dark";
+                themeToggle.setAttribute("aria-pressed", String(isDark));
+            };
+
             const savedTheme = localStorage.getItem("theme");
             if (savedTheme) {
                 document.documentElement.setAttribute("data-bs-theme", savedTheme);
             }
+            sync();
+
             themeToggle.addEventListener("click", () => {
                 const root = document.documentElement;
                 const cur = root.getAttribute("data-bs-theme") || "light";
                 const next = cur === "light" ? "dark" : "light";
                 root.setAttribute("data-bs-theme", next);
                 localStorage.setItem("theme", next);
+                sync();
             });
         });
     </script>

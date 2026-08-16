@@ -3,6 +3,7 @@
 
     const AOE_TIME_ZONE = 'Etc/GMT+12';
     const AOE_UTC_OFFSET = '-12:00';
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const HTML_ESCAPE = {
         '&': '&amp;',
         '<': '&lt;',
@@ -80,6 +81,51 @@
         }).format(dateObj) + ' (AOE)';
     }
 
+    // "Aug 19, 2026 · 11:59" — the card's compact AOE stamp. The page header
+    // states the timezone once, so the stamp itself stays unsuffixed.
+    function formatDateAOEShort(date) {
+        if (!date) return 'N/A';
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        if (Number.isNaN(dateObj.getTime())) return 'N/A';
+
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: AOE_TIME_ZONE,
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        }).formatToParts(dateObj).reduce((acc, part) => {
+            acc[part.type] = part.value;
+            return acc;
+        }, {});
+
+        return `${parts.month} ${parts.day}, ${parts.year} · ${parts.hour}:${parts.minute}`;
+    }
+
+    // "Apr 13–17, 2027" — collapses the month when both ends share it.
+    function formatConfRange(start, end) {
+        const toUTCDate = value => {
+            if (!value) return null;
+            const dateObj = value instanceof Date ? value : new Date(`${String(value).slice(0, 10)}T00:00:00Z`);
+            return Number.isNaN(dateObj.getTime()) ? null : dateObj;
+        };
+
+        const startDate = toUTCDate(start);
+        if (!startDate) return '';
+
+        const endDate = toUTCDate(end);
+        const head = `${MONTHS[startDate.getUTCMonth()]} ${startDate.getUTCDate()}`;
+        if (!endDate) return `${head}, ${startDate.getUTCFullYear()}`;
+
+        const tail = startDate.getUTCMonth() === endDate.getUTCMonth()
+            ? String(endDate.getUTCDate())
+            : `${MONTHS[endDate.getUTCMonth()]} ${endDate.getUTCDate()}`;
+
+        return `${head}–${tail}, ${endDate.getUTCFullYear()}`;
+    }
+
     function formatForDateTimeLocalInput(date) {
         if (!date) return '';
         const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -127,6 +173,8 @@
         escapeICSText,
         calcDiffDays,
         formatDateAOE,
+        formatDateAOEShort,
+        formatConfRange,
         formatForDateTimeLocalInput,
         fromAoeDateTimeLocalToIso,
         toUTCDateTimeStamp,

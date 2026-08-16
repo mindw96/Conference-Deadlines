@@ -13,117 +13,105 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg border-bottom mb-3 sticky-top bg-body">
-        <div class="container-xxl">
-            <a class="navbar-brand fw-semibold" href="/">Conference Deadlines</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
-                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-                </ul>
-                <div class="d-flex gap-2 align-items-center">
-                    <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false"
-                        autocomplete="off">
-                        <span class="theme-label">Dark</span>/<span class="theme-label">Light</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <nav class="cd-navbar cd-container">
+        <ul class="cd-nav-links">
+            <li><a class="cd-nav-link is-active" aria-current="page" href="/">Home</a></li>
+            <li><a class="cd-nav-link" href="about.html">About</a></li>
+        </ul>
+        <button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false"
+            autocomplete="off">
+            <i class="bi bi-moon" id="themeToggleIcon" aria-hidden="true"></i>
+            <span id="themeToggleLabel">Dark</span>
+        </button>
     </nav>
 
-    <main class="container-xxl">
-        <section class="card shadow-sm border-0 mb-3">
-            <div class="card-body">
-                <div class="d-flex flex-wrap align-items-baseline gap-2 mb-3">
-                    <div class="flex-grow-1">
-                        <label for="q" class="form-label">Search</label>
-                        <input id="q" type="search" class="form-control"
-                            placeholder="Conference, Category, City, Country…" autocomplete="off">
-                    </div>
-                    <div class="w-auto">
-                        <label for="categoryFilter" class="form-label">Category</label>
-                        <select id="categoryFilter" class="form-select">
-                            <option value="all" selected>All</option>
-                        </select>
-                    </div>
-                    <div class="w-auto">
-                        <label for="subfieldFilter" class="form-label">Subfield</label>
-                        <select id="subfieldFilter" class="form-select">
-                            <option value="all" selected>All</option>
-                        </select>
-                    </div>
-                    <div class="w-auto">
-                        <label for="statusFilter" class="form-label">Status</label>
-                        <select id="statusFilter" class="form-select">
-                            <option value="all" selected>All</option>
-                            <option value="upcoming">Upcoming</option>
-                            <option value="soon">Soon (≤7d)</option>
-                            <option value="closed">Closed</option>
-                        </select>
-                    </div>
-                    <div class="w-auto">
-                        <label for="sortSelect" class="form-label">Sort</label>
-                        <select id="sortSelect" class="form-select">
-                            <option value="next_due_asc" selected>Next deadline ↑</option>
-                            <option value="name_asc">Name A→Z</option>
-                        </select>
-                    </div>
-                    <div class="w-auto text-center">
-                        <label class="form-label d-block">Results:</label>
-                        <span id="resultCount">0</span>
-                    </div>
+    <main class="cd-container cd-main">
+        <header class="cd-page-header">
+            <h1>Conference Deadlines</h1>
+            <p class="cd-page-lede">
+                Every submission date for the conferences you care about, counted down to the second.<br>
+                All deadlines are AOE (UTC−12).
+            </p>
+        </header>
 
+        <section class="cd-filterbar">
+            <div class="cd-filter-row">
+                <div class="cd-field cd-field-search">
+                    <label for="q">Search</label>
+                    <input id="q" type="search" class="form-control"
+                        placeholder="Conference, category, city, country…" autocomplete="off">
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="showPastConf">
-                    <label class="form-check-label" for="showPastConf">
-                        Show past conferences
-                    </label>
+                <div class="cd-field">
+                    <label for="categoryFilter">Category</label>
+                    <select id="categoryFilter" class="form-select">
+                        <option value="all" selected>All</option>
+                    </select>
                 </div>
+                <div class="cd-field">
+                    <label for="subfieldFilter">Subfield</label>
+                    <select id="subfieldFilter" class="form-select">
+                        <option value="all" selected>All</option>
+                    </select>
+                </div>
+                <div class="cd-field">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="all" selected>All</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="soon">Soon (≤7d)</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+                <div class="cd-field">
+                    <label for="sortSelect">Sort</label>
+                    <select id="sortSelect" class="form-select">
+                        <option value="next_due_asc" selected>Next deadline ↑</option>
+                        <option value="name_asc">Name A→Z</option>
+                    </select>
+                </div>
+            </div>
+            <div class="cd-filter-meta">
+                <div class="cd-check-row">
+                    <input class="cd-check" type="checkbox" id="showPastConf">
+                    <label for="showPastConf">Show past conferences</label>
+                </div>
+                <span class="cd-eyebrow"><span id="resultCount">0</span> results</span>
             </div>
         </section>
 
-        <section class="text-muted small my-4">
-            <p class="mb-1">
-                <span class="ms-2">Didn't find the conference you were looking for?</span>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#suggestModal">
-                    Request to add a Conference
-                </button>
-            </p>
-            <p class="mb-1">All deadlines are AOE (UTC−12)</p>
-        </section>
-
-        <section id="cards" class="card-grid"></section>
-        <div id="noResults" class="text-center my-5 d-none">
+        <section id="cards" class="cd-card-grid"></section>
+        <div id="noResults" class="cd-empty d-none">
             <h4>No conferences found</h4>
-            <p class="text-muted">Try adjusting your filters.</p>
+            <p>Try adjusting your filters.</p>
         </div>
 
-        <footer class="container-xxl pt-4 my-md-5 pt-md-5 border-top">
-            <small class="d-block mb-3 text-body-secondary">
-                An open-source project by a researcher, for researchers.
-                <br>
-                Contribute on <a class="link-secondary text-decoration-none"
-                    href="https://github.com/mindw96/Conference-Deadlines" target="_blank" rel="noopener">GitHub</a>
-                <br>
-                Contact at
-                <a class="link-secondary text-decoration-none" href="mailto:mindw96@unist.ac.kr">mindw96@unist.ac.kr</a>
-            </small>
-            <small class="d-block text-body-secondary mt-2">© 2025 Conference Deadlines</small>
+        <section class="cd-cta">
+            <div>
+                <div class="cd-cta-title">Didn't find the conference you were looking for?</div>
+                <div class="cd-cta-note">Suggestions are reviewed by hand, usually within a few days.</div>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#suggestModal">
+                Request to add a Conference
+            </button>
+        </section>
+
+        <footer class="cd-footer">
+            <div>
+                An open-source project by a researcher, for researchers.<br>
+                Contribute on <a href="https://github.com/mindw96/Conference-Deadlines" target="_blank"
+                    rel="noopener">GitHub</a>
+                · Contact at <a href="mailto:mindw96@unist.ac.kr">mindw96@unist.ac.kr</a>
+            </div>
+            <div>© 2025 Conference Deadlines</div>
         </footer>
     </main>
 
     <!-- Suggestion Modal -->
     <div class="modal fade" id="suggestModal" tabindex="-1" aria-labelledby="suggestModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="suggestModalLabel">Add a New Conference</h1>
+                    <h1 class="modal-title" id="suggestModalLabel">Add a New Conference</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -152,7 +140,7 @@
                             <input type="text" class="form-control" id="category" placeholder="AI, CS, Science"
                                 required>
                         </div>
-                        <div class="mb-3">
+                        <div class="cd-fieldgroup">
                             <label class="form-label">Subfields <span class="text-danger">*</span></label>
                             <div id="subfieldsContainer">
                                 <div class="input-group mb-2">
@@ -163,7 +151,7 @@
                             <button type="button" id="addSubfieldBtn" class="btn btn-sm btn-outline-secondary mt-1">Add
                                 Subfield</button>
                         </div>
-                        <div class="mb-3 p-3 border rounded">
+                        <div class="cd-fieldgroup">
                             <label class="form-label">Deadlines (AOE Time)</label>
                             <div id="suggestionDeadlinesContainer">
                                 <div class="input-group mb-2">
@@ -182,7 +170,7 @@
                                 required>
                         </div>
                         <div id="suggestionAlert" class="d-none"></div>
-                        <div class="modal-footer pb-0">
+                        <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Submit for Review</button>
                         </div>
@@ -191,17 +179,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Suggest an Edit Modal -->
     <div class="modal fade" id="suggestEditModal" tabindex="-1" aria-labelledby="suggestEditModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="suggestEditModalLabel">Suggest an Edit</h1>
+                    <h1 class="modal-title" id="suggestEditModalLabel">Suggest an Edit</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="small text-body-secondary">Found incorrect information? Please correct it below and submit
-                        for review. Thank you!</p>
+                    <p class="cd-cta-note mb-3">Found incorrect information? Please correct it below and submit for
+                        review. Thank you!</p>
                     <form id="suggestEditForm">
                         <input type="hidden" id="suggestEditConfId">
 
@@ -233,7 +223,7 @@
                             <input type="text" class="form-control" id="suggestEditCategory"
                                 placeholder="e.g., AI, CS, Science">
                         </div>
-                        <div class="mb-3">
+                        <div class="cd-fieldgroup">
                             <label class="form-label">Subfields</label>
                             <div id="suggestEditSubfieldsContainer">
                             </div>
@@ -241,14 +231,14 @@
                                 class="btn btn-sm btn-outline-secondary mt-1">Add Subfield</button>
                         </div>
 
-                        <div class="mb-3 p-3 border rounded">
+                        <div class="cd-fieldgroup">
                             <label class="form-label">Deadlines (AOE Time)</label>
                             <div id="suggestEditDeadlinesContainer"></div>
                             <button type="button" id="addSuggestEditDeadlineBtn"
                                 class="btn btn-sm btn-outline-secondary mt-1">Add Deadline</button>
                         </div>
 
-                        <div class="modal-footer pb-0">
+                        <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Submit for Review</button>
                         </div>

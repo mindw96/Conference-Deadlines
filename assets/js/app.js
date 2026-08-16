@@ -225,6 +225,7 @@
             const next = cur === 'light' ? 'dark' : 'light';
             root.setAttribute('data-bs-theme', next);
             localStorage.setItem('theme', next);
+            syncThemeToggle();
         });
         on('#showPastConf', 'change', event => {
             state.showPast = event.target.checked;
@@ -235,6 +236,22 @@
         if (savedTheme) {
             document.documentElement.setAttribute('data-bs-theme', savedTheme);
         }
+
+        syncThemeToggle();
+    }
+
+    // The toggle names the theme it switches to: moon/Dark while light, sun/Light while dark.
+    function syncThemeToggle() {
+        const button = QS('#themeToggle');
+        if (!button) return;
+
+        const isDark = (document.documentElement.getAttribute('data-bs-theme') || 'light') === 'dark';
+        const icon = QS('#themeToggleIcon');
+        const label = QS('#themeToggleLabel');
+
+        if (icon) icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon';
+        if (label) label.textContent = isDark ? 'Light' : 'Dark';
+        button.setAttribute('aria-pressed', String(isDark));
     }
 
     function showLoadError(error) {
@@ -246,6 +263,7 @@
         parseQuery();
         bindControls();
         CD.calendar.bindICSDownloads(QS('#cards'), state);
+        CD.render.bindDeadlineToggles(QS('#cards'));
         CD.forms.bindSuggestionForms(state);
 
         CD.data.loadData()
