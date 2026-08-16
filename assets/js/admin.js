@@ -289,8 +289,7 @@
 
             } else {
                 // === INSERT 로직 (신규 제안 승인) ===
-                const year = suggestionData.conf_start_date ? new Date(suggestionData.conf_start_date).getFullYear() : new Date().getFullYear();
-                const newConferenceId = suggestionData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + year;
+                const newConferenceId = buildConferenceId(suggestionData.name, suggestionData.conf_start_date);
 
                 const newConference = {
                     id: newConferenceId,
@@ -305,7 +304,9 @@
 
                 const { error: confError } = await supabase.from('conferences').insert([newConference]);
                 if (confError) {
-                    alert(`Error inserting new conference: ${confError.message}`);
+                    alert(confError.code === '23505'
+                        ? `A conference with the id "${newConferenceId}" already exists. Approve this as an edit of that conference, or rename it before approving.`
+                        : `Error inserting new conference: ${confError.message}`);
                     button.disabled = false;
                     return;
                 }
@@ -340,6 +341,25 @@
             alert('Suggestion approved and applied successfully!');
             button.disabled = false;
         }
+    }
+
+    // Conference ids are a slug plus the year. Most names already carry their
+    // year ("AAAI 2027"), so appending one unconditionally produced ids like
+    // aaai-2027-2027 — and a name whose year disagrees with its start date
+    // (ICML 2026 opening in 2025) got the wrong one. Trust the name when it
+    // ends in a year; otherwise fall back to the start date, then to today.
+    function buildConferenceId(name, confStartDate) {
+        const slug = String(name || '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        if (/-\d{4}$/.test(slug)) return slug;
+
+        const startYear = confStartDate ? new Date(confStartDate).getFullYear() : NaN;
+        const year = Number.isFinite(startYear) && startYear > 1970 ? startYear : new Date().getFullYear();
+
+        return slug ? `${slug}-${year}` : String(year);
     }
 
     // PostgREST reports plain success when row-level security filters every
