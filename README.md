@@ -47,6 +47,7 @@ assets/js/app.js            # Public app orchestration
 assets/js/admin.js          # Admin dashboard behavior
 supabase_schema.sql         # Tables, indexes, RLS, admin model
 supabase_migration.sql      # Seed data
+supabase_repair.sql         # Realigns an existing project with the schema file
 scripts/smoke-test.mjs      # No-dependency smoke checks
 ```
 
@@ -95,6 +96,18 @@ where email = 'you@example.com';
 5. Run `supabase_migration.sql` to seed the sample conferences.
 6. Update `assets/js/api.js` if you are using a different Supabase URL or anon key.
 
+### Repairing an existing project
+
+If a project's tables were created by hand before this schema file existed, its
+policies can drift out of sync — the symptom is an admin action that reports
+success while the database ignores it, because row-level security is enabled
+without a policy covering that command. Run `supabase_repair.sql` once in the
+SQL Editor. It adds the `admin_users` model, adopts the existing Auth users as
+administrators, adds the missing `updated_at` columns, narrows the `anon`
+role's privileges to read-plus-suggest, and replaces every policy on the four
+tables with the canonical set. It creates no tables it would have to drop and
+deletes no rows.
+
 ## How to Contribute
 
 Contributions are welcome.
@@ -104,7 +117,9 @@ Contributions are welcome.
 
 ## Security Notes
 
-The browser uses a Supabase anon key, which is expected for public Supabase clients. Data safety depends on Row Level Security. Keep `supabase_schema.sql` and the deployed Supabase policies in sync.
+The browser uses a Supabase anon key, which is expected for public Supabase clients. Data safety depends on Row Level Security. Keep `supabase_schema.sql` and the deployed Supabase policies in sync; `supabase_repair.sql` realigns a project that has drifted.
+
+Admin writes verify that they affected a row. PostgREST answers a write that row-level security filtered out with a plain success and zero rows, so the admin page requests the affected rows back and treats an empty result as an error rather than reporting a delete that never happened.
 
 User-provided values are escaped before being rendered into HTML. When adding new UI, use the helpers in `assets/js/utils.js`.
 

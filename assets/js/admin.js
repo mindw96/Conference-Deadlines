@@ -226,9 +226,13 @@
         button.disabled = true;
 
         if (button.matches('.reject-btn')) {
-            const { error } = await supabase.from('conference_suggestions').delete().eq('id', suggestionId);
-            if (error) {
-                alert(`Error rejecting suggestion: ${error.message}`);
+            const failure = await writeAffectingRows(
+                supabase.from('conference_suggestions').delete().eq('id', suggestionId),
+                'Rejecting the suggestion'
+            );
+
+            if (failure) {
+                alert(`Error rejecting suggestion: ${failure}`);
                 button.disabled = false;
             } else {
                 card.remove();
@@ -268,8 +272,11 @@
                     areas: newAreas,
                 };
 
-                const { error: confError } = await supabase.from('conferences').update(updatedData).eq('id', targetId);
-                if (confError) { alert(`Error updating conference: ${confError.message}`); button.disabled = false; return; }
+                const confFailure = await writeAffectingRows(
+                    supabase.from('conferences').update(updatedData).eq('id', targetId),
+                    'Updating the conference'
+                );
+                if (confFailure) { alert(`Error updating conference: ${confFailure}`); button.disabled = false; return; }
 
                 const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', targetId);
                 if (deleteError) { alert(`Error clearing old deadlines: ${deleteError.message}`); button.disabled = false; return; }
@@ -318,7 +325,16 @@
             }
 
             // 3. 제안 처리 완료 후 공통 로직
-            await supabase.from('conference_suggestions').delete().eq('id', suggestionId);
+            const cleanupFailure = await writeAffectingRows(
+                supabase.from('conference_suggestions').delete().eq('id', suggestionId),
+                'Removing the processed suggestion'
+            );
+            if (cleanupFailure) {
+                alert(`The conference was saved, but the suggestion could not be cleared: ${cleanupFailure}`);
+                button.disabled = false;
+                fetchConferences();
+                return;
+            }
             card.remove();
             fetchConferences(); // 목록 새로고침
             alert('Suggestion approved and applied successfully!');
@@ -326,11 +342,30 @@
         }
     }
 
+    // PostgREST reports plain success when row-level security filters every
+    // target row away, so a blocked write is indistinguishable from a real one
+    // unless we ask for the affected rows back. An empty result is a failure.
+    const RLS_HINT = 'The database rejected it silently, which means row-level security blocked the write. '
+        + 'Check that your account is listed in public.admin_users and that the table has an admin policy '
+        + 'covering this action (see supabase_repair.sql).';
+
+    async function writeAffectingRows(query, action) {
+        const { data, error } = await query.select('id');
+
+        if (error) return error.message;
+        if (!data || data.length === 0) return `${action} affected no rows. ${RLS_HINT}`;
+        return null;
+    }
+
     async function handleDelete(id, cardElement) {
         if (confirm(`Are you sure you want to delete "${id}"? This cannot be undone.`)) {
-            const { error } = await supabase.from('conferences').delete().eq('id', id);
-            if (error) {
-                alert(`Error: ${error.message}`);
+            const failure = await writeAffectingRows(
+                supabase.from('conferences').delete().eq('id', id),
+                'Deleting the conference'
+            );
+
+            if (failure) {
+                alert(`Error: ${failure}`);
             } else {
                 cardElement.remove();
                 alert('Conference deleted.');
@@ -401,8 +436,11 @@
             }
         });
 
-        const { error: confError } = await supabase.from('conferences').update(updatedConferenceData).eq('id', id);
-        if (confError) { alert(`Conference update failed: ${confError.message}`); submitButton.disabled = false; return; }
+        const confFailure = await writeAffectingRows(
+            supabase.from('conferences').update(updatedConferenceData).eq('id', id),
+            'Updating the conference'
+        );
+        if (confFailure) { alert(`Conference update failed: ${confFailure}`); submitButton.disabled = false; return; }
 
         const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', id);
         if (deleteError) { alert(`Clearing old deadlines failed: ${deleteError.message}`); submitButton.disabled = false; return; }
