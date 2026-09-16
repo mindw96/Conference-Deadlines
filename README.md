@@ -19,12 +19,12 @@ Live Site -> [alldeadlines.info](https://alldeadlines.info)
 * **Suggest a Conference:** Submit a new conference or suggest edits through the public form.
 * **Admin Review Flow:** Supabase Auth users listed in `public.admin_users` can review, approve, edit, or delete records.
 * **Light/Dark Mode:** Switch between light and dark themes.
-* **Local JSON Fallback:** If Supabase is unavailable during local development, the app falls back to `conferences.json`.
+* **Explicit Sample Mode:** Local development can use historical sample data with ?demo=1. Live failures show a retry action instead of stale examples.
 
 ## Planned
 
 * Email reminder subscriptions.
-* Supabase Edge Functions for transactional approval workflows and notification delivery.
+* Optional notification delivery via Supabase Edge Functions.
 
 ## Tech Stack
 
@@ -45,10 +45,12 @@ assets/js/render.js         # Public card rendering and countdowns
 assets/js/forms.js          # Suggestion and edit-suggestion forms
 assets/js/app.js            # Public app orchestration
 assets/js/admin.js          # Admin dashboard behavior
-supabase_schema.sql         # Tables, indexes, RLS, admin model
+supabase_schema.sql         # Tables, validation, atomic RPCs, RLS, admin model
 supabase_migration.sql      # Seed data
 supabase_repair.sql         # Realigns an existing project with the schema file
 scripts/smoke-test.mjs      # No-dependency smoke checks
+scripts/serve.mjs           # Local static preview (127.0.0.1:4173)
+tests/                     # PostgreSQL, JavaScript, and browser regression tests
 ```
 
 ## Deadline Time Convention
@@ -62,22 +64,27 @@ Store deadline timestamps as UTC instants. For example, a deadline announced as 
 This project has no build step.
 
 ```bash
-python3 -m http.server 8000
+npm ci
+node scripts/serve.mjs
 ```
 
 Then open:
 
 ```text
-http://localhost:8000/
+http://127.0.0.1:4173/
 ```
 
-Run smoke checks:
+The default page reads the configured live database. To use bundled historical examples without live reads or form submissions, open /?demo=1 on localhost. Never use sample data as a current deadline source.
+
+Run checks:
 
 ```bash
-npm run smoke
+npm run check
+npx playwright install chromium
+npm run test:ui
 ```
 
-The smoke test checks JavaScript syntax, HTML script order, JSON seed shape, the Supabase schema file, and that the old `test.html` scratch file stays retired.
+Checks include syntax and fixture validation, PostgreSQL RLS/rollback tests using PGlite, deadline/calendar regressions, and Playwright desktop/mobile flows. Browser tests intercept all Supabase requests and never write to the live database. GitHub Actions runs both suites on every push and pull request.
 
 ## Supabase Setup
 
@@ -98,30 +105,61 @@ where email = 'you@example.com';
 
 ### Repairing an existing project
 
-If a project's tables were created by hand before this schema file existed, its
-policies can drift out of sync — the symptom is an admin action that reports
-success while the database ignores it, because row-level security is enabled
-without a policy covering that command. Run `supabase_repair.sql` once in the
-SQL Editor. It adds the `admin_users` model, adopts the existing Auth users as
-administrators, adds the missing `updated_at` columns, narrows the `anon`
-role's privileges to read-plus-suggest, and replaces every policy on the four
-tables with the canonical set. It creates no tables it would have to drop and
-deletes no rows.
+Run supabase_repair.sql in the SQL Editor **before publishing this frontend**.
+It is byte-for-byte identical to the canonical schema and can be rerun. It adds
+missing columns, installs validation and transactional RPCs, and replaces the
+policies on the four application tables. It supports existing UUID deadline IDs
+as well as the identity IDs used by fresh installations.
+
+Existing conference records, suggestions, and administrator membership are
+preserved. Repair never promotes Auth users. If a previous version enrolled users
+automatically, review public.admin_users and explicitly remove only memberships
+you have determined are unauthorized. A new project still requires the explicit
+owner enrollment shown above.
+
+New suggestions are checked for valid bounded JSON, timestamps, dates, names,
+and HTTP(S) URLs. A validation trigger checks new and changed payloads, leaving malformed legacy
+suggestions available to reject; the admin UI disables their approval. Changing
+only a target reference during deletion does not revalidate an old payload.
+New edit suggestions carry the complete areas map. Legacy single-category edit
+suggestions merge that category into the target's existing areas.
+
+save_conference and approve_suggestion use SECURITY INVOKER and the existing RLS
+boundary. All conference changes, deadline replacement, and queue removal happen
+in one transaction. A rejected or failed action retains the original data.
+Deleted targets and already processed suggestions produce explicit errors.
+
+The sample seed is optional and intended for a new demo project. Rerunning it
+only adds missing sample conferences and their deadlines, without replacing
+existing conferences or pending suggestions.
 
 ## How to Contribute
 
 Contributions are welcome.
 
 * **Suggest a Change:** Use the public suggestion form, contact the maintainer on the [About page](https://alldeadlines.info/about.html), or open a GitHub issue.
-* **Contribute Code:** Fork the repository, run `npm run smoke`, and submit a pull request.
+* **Contribute Code:** Fork the repository, run `npm run check` and `npm run test:ui`, and submit a pull request.
 
 ## Security Notes
 
 The browser uses a Supabase anon key, which is expected for public Supabase clients. Data safety depends on Row Level Security. Keep `supabase_schema.sql` and the deployed Supabase policies in sync; `supabase_repair.sql` realigns a project that has drifted.
 
-Admin writes verify that they affected a row. PostgREST answers a write that row-level security filtered out with a plain success and zero rows, so the admin page requests the affected rows back and treats an empty result as an error rather than reporting a delete that never happened.
+Admin saves and approvals use atomic database functions; deletes verify that they affected a row. PostgREST answers a write that row-level security filtered out with a plain success and zero rows, so the admin page requests the affected rows back and treats an empty result as an error rather than reporting a delete that never happened.
 
 User-provided values are escaped before being rendered into HTML. When adding new UI, use the helpers in `assets/js/utils.js`.
+
+Browser dependencies use exact CDN versions and Subresource Integrity hashes.
+Update the pinned URL and its SHA-384 hash together. Development dependencies
+are pinned in package-lock.json.
+
+Conference schedules export as all-day events with an exclusive next-day end;
+submission deadlines retain their UTC instant. Search is debounced, cards are
+reused, and the public grid loads 24 cards at a time. API reads use keyset
+pagination rather than assuming the server's row limit.
+
+References: [Supabase database functions](https://supabase.com/docs/guides/database/functions),
+[Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security),
+[PGlite](https://pglite.dev/docs/), [iCalendar RFC 5545](https://www.rfc-editor.org/rfc/rfc5545).
 
 ## License
 

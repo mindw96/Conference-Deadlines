@@ -10,10 +10,11 @@
 -- Store deadline timestamps as UTC instants. A paper deadline shown as
 -- YYYY-MM-DD 23:59 AOE (UTC-12) is stored as YYYY-MM-(DD+1) 11:59:00Z.
 
--- Clear existing data to prevent duplicates if you run this multiple times.
-TRUNCATE public.conferences, public.deadlines RESTART IDENTITY CASCADE;
+-- Insert only missing sample conferences; never erase or change existing records.
+begin;
 
 -- Insert data into the 'conferences' table
+with inserted as (
 INSERT INTO public.conferences (id, name, conf_start_date, conf_end_date, location, site_url, areas, tags, note, timezone) VALUES
 ('aaai-2026', 'AAAI 2026', '2026-01-20', '2026-01-27', 'Singapore', 'https://aaai.org/Conferences/AAAI-26/', '{"AI": ["ML", "NLP", "CV"]}', '{}', '', 'AOE (UTC−12)'),
 ('acl-2026', 'ACL 2026', '2026-07-02', '2026-07-07', 'San Diego, California, United States', 'https://2026.aclweb.org', '{"AI": ["NLP"]}', '{"ARR"}', '', 'UTC'),
@@ -24,14 +25,17 @@ INSERT INTO public.conferences (id, name, conf_start_date, conf_end_date, locati
 ('chi-2026', 'ACM CHI 2026', '2026-04-13', '2026-04-17', 'Barcelona, Spain', 'https://chi2026.acm.org/', '{"CS": ["HCI", "UX/UI"]}', '{}', '', 'AOE (UTC−12)'),
 ('siggraph-2026', 'SIGGRAPH 2026', '2026-07-19', '2026-07-23', 'Los Angeles, California', 'https://s2026.siggraph.org/', '{"CS": ["Graphics", "Animation", "VR/AR"]}', '{}', '', 'AOE (UTC−12)'),
 ('aps-2026', 'APS Global Physics Summit 2026', '2026-03-15', '2026-03-20', 'Denver, Colorado, United States', 'https://summit.aps.org/', '{"Science": ["Physics"]}', '{}', '', 'AOE (UTC−12)'),
-('ismb-2026', 'ISMB 2026', '2026-07-12', '2026-07-16', 'Washington, D.C., United States', 'https://www.iscb.org/ismb2026/home', '{"Bio": ["Bioinformatics", "Computational Biology"]}', '{}', '', 'AOE (UTC−12)');
-
--- Insert data into the 'deadlines' table
-INSERT INTO public.deadlines (conference_id, deadline_type, due_date) VALUES
+('ismb-2026', 'ISMB 2026', '2026-07-12', '2026-07-16', 'Washington, D.C., United States', 'https://www.iscb.org/ismb2026/home', '{"Bio": ["Bioinformatics", "Computational Biology"]}', '{}', '', 'AOE (UTC−12)')
+ON CONFLICT (id) DO NOTHING RETURNING id
+), sample_deadlines(conference_id, deadline_type, due_date) as (VALUES
 ('aaai-2026', 'Deadline', '2025-07-26T11:59:00Z'),
 ('emnlp-2025', 'Deadline', '2025-05-21T11:59:00Z'),
 ('neurips-2025', 'Deadline', '2025-05-12T11:59:00Z'),
 ('iclr-2026', 'Deadline', '2025-09-20T11:59:00Z'),
 ('miccai-2025', 'Deadline', '2025-02-14T11:59:00Z'),
 ('chi-2026', 'Deadline', '2025-09-05T11:59:00Z'),
-('aps-2026', 'Deadline', '2025-10-24T11:59:00Z');
+('aps-2026', 'Deadline', '2025-10-24T11:59:00Z'))
+INSERT INTO public.deadlines(conference_id, deadline_type, due_date)
+SELECT d.conference_id, d.deadline_type, d.due_date::timestamptz
+FROM sample_deadlines d JOIN inserted i ON i.id=d.conference_id;
+commit;

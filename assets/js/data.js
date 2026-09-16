@@ -4,6 +4,7 @@
     function normalizeDeadlines(rawDeadlines) {
         if (Array.isArray(rawDeadlines)) {
             return rawDeadlines
+                .filter(deadline => deadline && typeof deadline === 'object')
                 .map(deadline => ({
                     type: deadline.type || deadline.deadline_type || 'Deadline',
                     due: deadline.due || deadline.due_date
@@ -24,39 +25,31 @@
     }
 
     function normalizeItem(raw) {
-        const areas = (typeof raw.areas === 'object' && raw.areas !== null) ? raw.areas : {};
+        const areas = CD.isAreasObject(raw.areas) ? raw.areas : {};
         const dates = raw.dates || {
             conf_start: raw.conf_start_date,
             conf_end: raw.conf_end_date
         };
         const deadlines = normalizeDeadlines(raw.deadlines);
-        const now = new Date();
-
-        let nextDue = null;
-        let status = deadlines.length === 0 ? 'coming_soon' : 'closed';
-
-        for (const deadline of deadlines) {
-            if (deadline.due > now) {
-                nextDue = deadline.due;
-                status = 'upcoming';
-                break;
-            }
-        }
-
-        if (nextDue && CD.calcDiffDays(nextDue) <= 7) {
-            status = 'soon';
-        }
-
-        return {
+        const item = {
             ...raw,
             areas,
+            malformedAreas: raw.areas != null && !CD.isAreasObject(raw.areas),
             dates,
             site: raw.site || raw.site_url,
             tags: Array.isArray(raw.tags) ? raw.tags : [],
             deadlines,
-            nextDue,
-            status
+            subfields: Object.values(areas).flat(),
+            searchText: [raw.name, raw.location, ...(Array.isArray(raw.tags) ? raw.tags : []), ...Object.keys(areas), ...Object.values(areas).flat()].join(' ').toLowerCase()
         };
+        refreshTimeState(item);
+        return item;
+    }
+
+    function refreshTimeState(item, now = new Date()) {
+        item.nextDue = item.deadlines.find(deadline => deadline.due > now)?.due || null;
+        item.status = item.nextDue ? (CD.calcDiffDays(item.nextDue, now) <= 7 ? 'soon' : 'upcoming')
+            : item.deadlines.length ? 'closed' : 'coming_soon';
     }
 
     function transformSupabaseConference(conf) {
@@ -92,15 +85,14 @@
     }
 
     async function loadData() {
-        try {
-            return await loadFromSupabase();
-        } catch (error) {
-            console.warn('Supabase load failed; falling back to conferences.json.', error);
-            return loadFromJson();
-        }
+        const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+        const demo = local && new URL(window.location.href).searchParams.get('demo') === '1';
+        if (demo) return { items: await loadFromJson(), source: 'demo' };
+        return { items: await loadFromSupabase(), source: 'live' };
     }
 
     CD.data = {
+        refreshTimeState,
         normalizeDeadlines,
         normalizeItem,
         loadFromSupabase,

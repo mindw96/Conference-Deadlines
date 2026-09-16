@@ -39,16 +39,6 @@
         container.appendChild(div);
     }
 
-    function addSuggestEditSubfieldInput(container, value = '') {
-        const div = document.createElement('div');
-        div.className = 'input-group mb-2';
-        div.innerHTML = `
-            <input type="text" class="form-control suggest-edit-subfield-input" value="${CD.escapeAttr(value)}">
-            <button class="btn btn-outline-danger remove-subfield-btn" type="button" aria-label="Remove subfield">&times;</button>
-        `;
-        container.appendChild(div);
-    }
-
     function addSuggestEditDeadlineInput(container, type = '', date = '') {
         const div = document.createElement('div');
         div.className = 'input-group mb-2';
@@ -68,21 +58,7 @@
         if (deadlinesContainer) deadlinesContainer.innerHTML = defaultSuggestionDeadlineHTML(true);
     }
 
-    function collectSuggestionDeadlines(container, typeSelector, dueSelector) {
-        const deadlines = [];
-
-        CD.QSA('.input-group', container).forEach(group => {
-            const type = CD.QS(typeSelector, group)?.value.trim();
-            const due = CD.QS(dueSelector, group)?.value;
-            const dueIso = CD.fromAoeDateTimeLocalToIso(due);
-
-            if (type && dueIso) {
-                deadlines.push({ type, due: dueIso });
-            }
-        });
-
-        return deadlines;
-    }
+    const collectSuggestionDeadlines = CD.collectDeadlines;
 
     function bindAddSuggestionForm() {
         const suggestModal = CD.QS('#suggestModal');
@@ -124,61 +100,72 @@
             submitButton.disabled = true;
             submitButton.textContent = 'Submitting...';
 
-            const subfieldValues = CD.QSA('.subfield-input', subfieldsContainer)
-                .map(input => input.value.trim())
-                .filter(Boolean);
+            try {
+                const subfieldValues = CD.QSA('.subfield-input', subfieldsContainer)
+                    .map(input => input.value.trim())
+                    .filter(Boolean);
 
-            const suggestion = {
-                name: CD.QS('#confName').value.trim(),
-                site_url: CD.QS('#confUrl').value.trim(),
-                location: CD.QS('#confLocation').value.trim(),
-                conf_start_date: CD.QS('#confStartDate').value || null,
-                conf_end_date: CD.QS('#confEndDate').value || null,
-                category: CD.QS('#category').value.trim(),
-                subfields: subfieldValues.join(', '),
-                deadlines: collectSuggestionDeadlines(
-                    suggestionDeadlinesContainer,
-                    '.suggestion-deadline-type',
-                    '.suggestion-deadline-due'
-                )
-            };
+                const suggestion = {
+                    name: CD.QS('#confName').value.trim(),
+                    site_url: CD.QS('#confUrl').value.trim(),
+                    location: CD.QS('#confLocation').value.trim(),
+                    conf_start_date: CD.QS('#confStartDate').value || null,
+                    conf_end_date: CD.QS('#confEndDate').value || null,
+                    category: CD.QS('#category').value.trim(),
+                    subfields: subfieldValues.join(', '),
+                    deadlines: collectSuggestionDeadlines(
+                        suggestionDeadlinesContainer,
+                        '.suggestion-deadline-type',
+                        '.suggestion-deadline-due'
+                    )
+                };
 
-            const { error } = await CD.api.insertConferenceSuggestion(suggestion);
+                suggestion.areas = Object.fromEntries(suggestion.category ? [[suggestion.category, subfieldValues]] : []);
+                const { error } = await CD.api.insertConferenceSuggestion(suggestion);
 
-            if (error) {
+                if (error) {
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = `Error: ${error.message}`;
+                } else {
+                    alertBox.className = 'alert alert-success';
+                    alertBox.textContent = 'Thank you! Your suggestion has been submitted for review.';
+                    resetSuggestionForm(suggestionForm, alertBox, subfieldsContainer, suggestionDeadlinesContainer);
+                }
+
+            } catch (error) {
                 alertBox.className = 'alert alert-danger';
-                alertBox.textContent = `Error: ${error.message}`;
-            } else {
-                alertBox.className = 'alert alert-success';
-                alertBox.textContent = 'Thank you! Your suggestion has been submitted for review.';
-                resetSuggestionForm(suggestionForm, alertBox, subfieldsContainer, suggestionDeadlinesContainer);
+                alertBox.textContent = error.message;
+            } finally {
+                alertBox.classList.remove('d-none');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit for Review';
             }
-
-            alertBox.classList.remove('d-none');
-            submitButton.disabled = false;
-            submitButton.textContent = 'Submit for Review';
         });
     }
 
     function bindSuggestEditForm(state) {
         const suggestEditModalEl = CD.QS('#suggestEditModal');
         const suggestEditForm = CD.QS('#suggestEditForm');
-        const suggestEditCategoryInput = CD.QS('#suggestEditCategory');
-        const suggestEditSubfieldsContainer = CD.QS('#suggestEditSubfieldsContainer');
-        const addSuggestEditSubfieldBtn = CD.QS('#addSuggestEditSubfieldBtn');
+        const areasContainer = CD.QS('#suggestEditAreasContainer');
         const suggestEditDeadlinesContainer = CD.QS('#suggestEditDeadlinesContainer');
         const addSuggestEditDeadlineBtn = CD.QS('#addSuggestEditDeadlineBtn');
 
         if (!suggestEditModalEl || !suggestEditForm) return;
 
         suggestEditModalEl.addEventListener('show.bs.modal', event => {
+            if (state.source === 'demo') { event.preventDefault(); return; }
             const button = event.relatedTarget;
             const confId = button?.getAttribute('data-conf-id');
             const item = state.items.find(conf => conf.id === confId);
             if (!item) return;
+            if (item.malformedAreas) {
+                event.preventDefault();
+                alert('This conference has malformed category data. Ask an administrator to repair it before submitting edits.');
+                return;
+            }
 
             suggestEditForm.reset();
-            suggestEditSubfieldsContainer.innerHTML = '';
+            areasContainer.textContent = '';
             suggestEditDeadlinesContainer.innerHTML = '';
 
             CD.QS('#suggestEditConfId').value = item.id || '';
@@ -188,14 +175,7 @@
             CD.QS('#suggestEditConfStartDate').value = item.dates?.conf_start || '';
             CD.QS('#suggestEditConfEndDate').value = item.dates?.conf_end || '';
 
-            const firstCategory = item.areas ? Object.keys(item.areas)[0] || '' : '';
-            suggestEditCategoryInput.value = firstCategory;
-            const subfields = item.areas?.[firstCategory] || [];
-            if (subfields.length > 0) {
-                subfields.forEach(subfield => addSuggestEditSubfieldInput(suggestEditSubfieldsContainer, subfield));
-            } else {
-                addSuggestEditSubfieldInput(suggestEditSubfieldsContainer);
-            }
+            Object.entries(item.areas).forEach(([category, fields]) => CD.addAreaInput(areasContainer, category, fields.join(', ')));
 
             if (item.deadlines && item.deadlines.length > 0) {
                 item.deadlines.forEach(deadline => addSuggestEditDeadlineInput(suggestEditDeadlinesContainer, deadline.type, deadline.due));
@@ -204,16 +184,14 @@
             }
         });
 
-        addSuggestEditSubfieldBtn?.addEventListener('click', () => addSuggestEditSubfieldInput(suggestEditSubfieldsContainer));
-        suggestEditSubfieldsContainer.addEventListener('click', event => {
-            if (event.target.matches('.remove-subfield-btn') && suggestEditSubfieldsContainer.querySelectorAll('.input-group').length > 1) {
-                event.target.closest('.input-group')?.remove();
-            }
+        CD.QS('#addSuggestEditAreaBtn').addEventListener('click', () => CD.addAreaInput(areasContainer));
+        areasContainer.addEventListener('click', event => {
+            if (event.target.matches('.remove-area-btn')) event.target.closest('.area-group').remove();
         });
 
         addSuggestEditDeadlineBtn?.addEventListener('click', () => addSuggestEditDeadlineInput(suggestEditDeadlinesContainer));
         suggestEditDeadlinesContainer.addEventListener('click', event => {
-            if (event.target.matches('.remove-deadline-btn') && suggestEditDeadlinesContainer.querySelectorAll('.input-group').length > 1) {
+            if (event.target.matches('.remove-deadline-btn')) {
                 event.target.closest('.input-group')?.remove();
             }
         });
@@ -223,39 +201,37 @@
             const submitButton = suggestEditForm.querySelector('button[type="submit"]');
             submitButton.disabled = true;
 
-            const category = suggestEditCategoryInput.value.trim();
-            const subfields = CD.QSA('.suggest-edit-subfield-input', suggestEditSubfieldsContainer)
-                .map(input => input.value.trim())
-                .filter(Boolean)
-                .join(', ');
+            try {
+                const finalSuggestion = {
+                    name: CD.QS('#suggestEditConfName').value.trim(),
+                    site_url: CD.QS('#suggestEditConfUrl').value.trim(),
+                    location: CD.QS('#suggestEditConfLocation').value.trim(),
+                    conf_start_date: CD.QS('#suggestEditConfStartDate').value || null,
+                    conf_end_date: CD.QS('#suggestEditConfEndDate').value || null,
+                    deadlines: collectSuggestionDeadlines(
+                        suggestEditDeadlinesContainer,
+                        '.deadline-type',
+                        '.deadline-date'
+                    ),
+                    areas: CD.collectAreas(areasContainer),
+                    is_edit: true,
+                    target_conference_id: CD.QS('#suggestEditConfId').value
+                };
 
-            const finalSuggestion = {
-                name: CD.QS('#suggestEditConfName').value.trim(),
-                site_url: CD.QS('#suggestEditConfUrl').value.trim(),
-                location: CD.QS('#suggestEditConfLocation').value.trim(),
-                conf_start_date: CD.QS('#suggestEditConfStartDate').value || null,
-                conf_end_date: CD.QS('#suggestEditConfEndDate').value || null,
-                deadlines: collectSuggestionDeadlines(
-                    suggestEditDeadlinesContainer,
-                    '.deadline-type',
-                    '.deadline-date'
-                ),
-                category,
-                subfields,
-                is_edit: true,
-                target_conference_id: CD.QS('#suggestEditConfId').value
-            };
+                const { error } = await CD.api.insertConferenceSuggestion(finalSuggestion);
 
-            const { error } = await CD.api.insertConferenceSuggestion(finalSuggestion);
+                if (error) {
+                    alert(`Error submitting suggestion: ${error.message}`);
+                } else {
+                    alert('Thank you! Your edit suggestion has been submitted for review.');
+                    bootstrap.Modal.getInstance(suggestEditModalEl)?.hide();
+                }
 
-            if (error) {
-                alert(`Error submitting suggestion: ${error.message}`);
-            } else {
-                alert('Thank you! Your edit suggestion has been submitted for review.');
-                bootstrap.Modal.getInstance(suggestEditModalEl)?.hide();
+            } catch (error) {
+                alert('Error submitting suggestion: ' + error.message);
+            } finally {
+                submitButton.disabled = false;
             }
-
-            submitButton.disabled = false;
         });
     }
 

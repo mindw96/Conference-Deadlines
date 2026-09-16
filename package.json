@@ -5,7 +5,14 @@
   "description": "A static, Supabase-backed academic conference deadline tracker.",
   "scripts": {
     "smoke": "node scripts/smoke-test.mjs",
-    "check": "node scripts/smoke-test.mjs"
+    "check": "npm run smoke && npm test",
+    "test": "node --test tests/*.test.mjs",
+    "test:ui": "playwright test",
+    "dev": "node scripts/serve.mjs"
   },
-  "license": "CC-BY-NC-SA-4.0"
+  "license": "CC-BY-NC-SA-4.0",
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.63.0"
+  }
 }

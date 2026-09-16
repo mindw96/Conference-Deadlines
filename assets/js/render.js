@@ -6,7 +6,7 @@
     function renderAreaBadges(areas) {
         let html = '';
 
-        for (const category in areas) {
+        for (const category of Object.keys(areas)) {
             html += `<span class="cd-badge cd-badge-area">${CD.escapeHTML(category)}</span>`;
             (areas[category] || []).forEach(subfield => {
                 html += `<span class="cd-badge">${CD.escapeHTML(subfield)}</span>`;
@@ -98,13 +98,13 @@
                     <i class="bi bi-chevron-down" aria-hidden="true"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><h6 class="dropdown-header">Conference Schedule</h6></li>
+                    ${conferenceEvent ? `<li><h6 class="dropdown-header">Conference Schedule</h6></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(conferenceGoogleLink)}" target="_blank" rel="noopener">Google Calendar</a></li>
                     <li><a class="dropdown-item" href="${CD.escapeAttr(conferenceOutlookLink)}" target="_blank" rel="noopener">Outlook Calendar</a></li>
                     <li><a class="dropdown-item ics-download-link" href="#"
                         data-event-type="conference"
                         data-conf-id="${CD.escapeAttr(item.id)}">Download ICS (.ics)</a></li>
-                    ${deadlineMenuItemsHTML ? '<li><hr class="dropdown-divider"></li>' : ''}
+                    ${deadlineMenuItemsHTML ? '<li><hr class="dropdown-divider"></li>' : ''}` : '<li><span class="dropdown-item-text">Conference dates not announced</span></li>'}
                     ${deadlineMenuItemsHTML}
                 </ul>
             </div>
@@ -230,9 +230,8 @@
         return days > 0 ? `${days}d ${hhmmss}` : hhmmss;
     }
 
-    function updateCountdowns(onExpire) {
+    function updateCountdowns() {
         const now = Date.now();
-        let needsRerender = false;
 
         CD.QSA('.js-countdown').forEach(el => {
             const iso = el.getAttribute('data-deadline');
@@ -243,26 +242,21 @@
             if (diff <= 0) {
                 el.textContent = '00:00:00';
                 el.classList.remove('is-urgent');
-                needsRerender = true;
             } else {
                 el.textContent = formatCountdown(diff);
                 el.classList.toggle('is-urgent', diff <= 24 * 3600 * 1000);
             }
         });
 
-        if (needsRerender && typeof onExpire === 'function') {
-            stopCountdownTimer();
-            onExpire();
-        }
     }
 
-    function startCountdownTimer(onExpire) {
+    function startCountdownTimer(onTick) {
         stopCountdownTimer();
-        updateCountdowns(onExpire);
-
-        if (CD.QS('.js-countdown')) {
-            countdownTimer = setInterval(() => updateCountdowns(onExpire), 1000);
-        }
+        updateCountdowns();
+        countdownTimer = setInterval(() => {
+            if (typeof onTick === 'function') onTick();
+            updateCountdowns();
+        }, 1000);
     }
 
     function stopCountdownTimer() {
@@ -273,6 +267,7 @@
     }
 
     CD.render = {
+        updateCountdowns,
         renderCard,
         renderAreaBadges,
         renderTagChips,

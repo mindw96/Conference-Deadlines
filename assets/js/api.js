@@ -18,25 +18,38 @@
         return CD.supabaseClient;
     }
 
+    // Keyset pagination also works when a project's API cap is below our requested page size.
+    async function selectAll(table, columns = '*') {
+        const rows = [];
+        let lastId = null;
+        for (;;) {
+            let query = getClient().from(table).select(columns).order('id', { ascending: true }).limit(500);
+            if (lastId !== null) query = query.gt('id', lastId);
+            const { data, error } = await query;
+            if (error) return { data: null, error };
+            if (!data?.length) return { data: rows, error: null };
+            const nextId = data[data.length - 1].id;
+            if (nextId == null || nextId === lastId) throw new Error('Invalid pagination response.');
+            rows.push(...data);
+            lastId = nextId;
+        }
+    }
+
     async function selectConferencesWithDeadlines() {
-        return getClient()
-            .from('conferences')
-            .select(`
-                id, name, conf_start_date, conf_end_date, location, site_url, areas, tags, note, timezone,
-                deadlines (
-                    deadline_type,
-                    due_date
-                )
-            `);
+        return selectAll('conferences', '*, deadlines(deadline_type, due_date)');
     }
 
     async function insertConferenceSuggestion(suggestion) {
+        const payload = { is_edit: false, ...suggestion };
+        const problem = CD.validateSuggestion(payload);
+        if (problem) throw new Error(problem);
         return getClient()
             .from('conference_suggestions')
-            .insert([suggestion]);
+            .insert([payload]);
     }
 
     CD.api = {
+        selectAll,
         config,
         getClient,
         selectConferencesWithDeadlines,

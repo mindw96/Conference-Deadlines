@@ -1171,3 +1171,15 @@ a.cd-icon-btn:hover {
         padding: 0 var(--spacing-md);
     }
 }
+
+
+/* Existing conference labels may exceed the limits applied to new submissions. */
+.cd-taglist .cd-badge {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+.cd-card-title,
+.cd-card-meta {
+    overflow-wrap: anywhere;
+}

@@ -21,14 +21,7 @@
     // --- HELPER FUNCTIONS for Edit Modal ---
 
     function addAreaInput(category = '', subfields = '') {
-        const div = document.createElement('div');
-        div.className = 'input-group mb-2 area-group';
-        div.innerHTML = `
-            <input type="text" class="form-control area-category" placeholder="Category (e.g., AI)" value="${CD.escapeAttr(category)}">
-            <input type="text" class="form-control area-subfields" placeholder="Subfields (comma separated)" value="${CD.escapeAttr(subfields)}">
-            <button class="btn btn-outline-danger remove-area-btn" type="button">&times;</button>
-        `;
-        areasContainer.appendChild(div);
+        CD.addAreaInput(areasContainer, category, subfields);
     }
 
     function addDeadlineInput(type = '', date = '') {
@@ -69,16 +62,6 @@
         checkUserSession();
     }
 
-    async function fetchConferences() {
-        const { data, error } = await supabase.from('conferences').select('*').order('name', { ascending: true });
-        if (error) {
-            console.error('Error fetching conferences:', error);
-            conferenceListDiv.innerHTML = CD.createErrorHTML('Failed to load conferences.');
-            return;
-        }
-        renderConferences(data);
-    }
-
     /**
  * Compares two conference objects and returns an array of changes.
  * @param {object} original - The original conference data.
@@ -103,12 +86,7 @@
         // 2. Compare 'areas' by creating a comparable string
         const originalAreas = original.areas ? JSON.stringify(original.areas) : '{}';
 
-        const suggestionAreas = {};
-        if (suggestion.category) {
-            suggestionAreas[suggestion.category] = suggestion.subfields
-                ? suggestion.subfields.split(',').map(s => s.trim())
-                : [];
-        }
+        const suggestionAreas = CD.suggestionAreas(suggestion, original.areas);
         const suggestionAreasString = JSON.stringify(suggestionAreas);
 
         if (originalAreas !== suggestionAreasString) {
@@ -116,8 +94,11 @@
         }
 
         // 3. Compare 'deadlines' by creating a comparable string
-        const originalDeadlines = original.deadlines ? JSON.stringify(original.deadlines.map(d => ({ type: d.deadline_type, due: d.due_date })).sort()) : '[]';
-        const suggestionDeadlines = suggestion.deadlines ? JSON.stringify(suggestion.deadlines.sort()) : '[]';
+        const comparableDeadlines = deadlines => JSON.stringify(deadlines.map(d => ({
+            type: d.type || d.deadline_type, due: new Date(d.due || d.due_date).toISOString()
+        })).sort((a, b) => a.due.localeCompare(b.due) || a.type.localeCompare(b.type)));
+        const originalDeadlines = comparableDeadlines(original.deadlines || []);
+        const suggestionDeadlines = comparableDeadlines(suggestion.deadlines);
 
         if (originalDeadlines !== suggestionDeadlines) {
             changes.push(`<b>Deadlines:</b> List has been updated.`);
@@ -138,16 +119,16 @@
         noSuggestionsDiv.classList.add('d-none');
         suggestionsList.innerHTML = suggestions.map(s => {
             const isEdit = s.is_edit;
+            const invalid = CD.validateSuggestion(s) || (isEdit && !conferenceMap.has(s.target_conference_id) ? 'Target conference missing.' : '');
             const editBadge = isEdit ? '<span class="badge bg-info">Edit Suggestion</span>' : '';
             const targetInfo = isEdit ? `<p class="card-text mb-1"><small><strong>Target:</strong> ${CD.escapeHTML(s.target_conference_id)}</small></p>` : '';
 
             // Deadlines를 보기 좋게 표시
-            const deadlinesText = s.deadlines
-                ? s.deadlines.map(d => `${CD.escapeHTML(d.type)}: ${CD.escapeHTML(CD.formatDateAOE(d.due))}`).join('<br>')
-                : CD.escapeHTML(CD.formatDateAOE(s.deadline_date));
+            const deadlinesText = invalid ? CD.escapeHTML(invalid)
+                : s.deadlines.map(d => CD.escapeHTML(d.type) + ': ' + CD.escapeHTML(CD.formatDateAOE(d.due))).join('<br>');
 
             let changesHTML = '';
-            if (isEdit && s.target_conference_id) {
+            if (!invalid && isEdit && s.target_conference_id) {
                 const original = conferenceMap.get(s.target_conference_id);
                 if (original) {
                     const changes = compareConferenceData(original, s);
@@ -178,12 +159,11 @@
                         <p class="card-text mb-1"><strong>URL:</strong> <a href="${CD.escapeAttr(siteURL)}" target="_blank" rel="noopener">${CD.escapeHTML(s.site_url)}</a></p>
                         <p class="card-text mb-1"><strong>Location:</strong> ${CD.escapeHTML(s.location || 'N/A')}</p>
                         <p class="card-text mb-1"><strong>Dates:</strong> ${CD.escapeHTML(s.conf_start_date || 'N/A')} to ${CD.escapeHTML(s.conf_end_date || 'N/A')}</p>
-                        ${categoryHTML}
-                        ${subfieldsHTML}
+                        ${s.areas && CD.validAreas(s.areas) ? '<p><strong>Areas:</strong> ' + CD.escapeHTML(JSON.stringify(s.areas)) + '</p>' : categoryHTML + subfieldsHTML}
                         <p class="card-text mb-1"><strong>Deadlines:</strong><br><small>${deadlinesText}</small></p>
                         ${changesHTML}
                         <div class="mt-3">
-                            <button class="btn btn-success btn-sm approve-btn">Approve</button>
+                            <button class="btn btn-success btn-sm approve-btn" ${invalid ? 'disabled' : ''}>Approve</button>
                             <button class="btn btn-danger btn-sm reject-btn">Reject</button>
                         </div>
                     </div>
@@ -218,156 +198,30 @@
     }
 
     async function handleSuggestionAction(event) {
-        const button = event.target;
-        if (!button.matches('.approve-btn, .reject-btn')) return;
-
+        const button = event.target.closest('.approve-btn, .reject-btn');
+        if (!button) return;
         const card = button.closest('.card');
-        const suggestionId = card.dataset.id;
         button.disabled = true;
-
-        if (button.matches('.reject-btn')) {
-            const failure = await writeAffectingRows(
-                supabase.from('conference_suggestions').delete().eq('id', suggestionId),
-                'Rejecting the suggestion'
-            );
-
-            if (failure) {
-                alert(`Error rejecting suggestion: ${failure}`);
-                button.disabled = false;
+        try {
+            if (button.matches('.reject-btn')) {
+                const failure = await writeAffectingRows(supabase.from('conference_suggestions').delete().eq('id', card.dataset.id), 'Rejecting the suggestion');
+                if (failure) throw new Error(failure);
             } else {
-                card.remove();
+                const { error } = await supabase.rpc('approve_suggestion', { p_suggestion_id: card.dataset.id });
+                if (error) throw new Error(error.code === '23505' ? 'This conference ID already exists. Submit an edit or rename the new submission.' : error.message);
             }
-            return; // Early return
-        }
-
-        if (button.matches('.approve-btn')) {
-            // 1. 제안 데이터 가져오기
-            const { data: suggestionData, error: fetchError } = await supabase
-                .from('conference_suggestions').select('*').eq('id', suggestionId).single();
-
-            if (fetchError) {
-                alert(`Could not fetch suggestion details: ${fetchError.message}`);
-                button.disabled = false;
-                return;
-            }
-
-            const newAreas = {};
-            if (suggestionData.category) {
-                newAreas[suggestionData.category] = suggestionData.subfields
-                    ? suggestionData.subfields.split(',').map(s => s.trim())
-                    : [];
-            }
-
-            // 2. '수정 제안'인지 '신규 제안'인지에 따라 로직 분기
-            if (suggestionData.is_edit) {
-                // === UPDATE 로직 (수정 제안 승인) ===
-                const targetId = suggestionData.target_conference_id;
-
-                const updatedData = {
-                    name: suggestionData.name,
-                    site_url: suggestionData.site_url,
-                    location: suggestionData.location,
-                    conf_start_date: suggestionData.conf_start_date,
-                    conf_end_date: suggestionData.conf_end_date,
-                    areas: newAreas,
-                };
-
-                const confFailure = await writeAffectingRows(
-                    supabase.from('conferences').update(updatedData).eq('id', targetId),
-                    'Updating the conference'
-                );
-                if (confFailure) { alert(`Error updating conference: ${confFailure}`); button.disabled = false; return; }
-
-                const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', targetId);
-                if (deleteError) { alert(`Error clearing old deadlines: ${deleteError.message}`); button.disabled = false; return; }
-
-                if (suggestionData.deadlines && suggestionData.deadlines.length > 0) {
-                    const newDeadlines = suggestionData.deadlines.map(d => ({ conference_id: targetId, deadline_type: d.type, due_date: d.due }));
-                    const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
-                    if (insertError) { alert(`Error inserting new deadlines: ${insertError.message}`); button.disabled = false; return; }
-                }
-
-            } else {
-                // === INSERT 로직 (신규 제안 승인) ===
-                const newConferenceId = buildConferenceId(suggestionData.name, suggestionData.conf_start_date);
-
-                const newConference = {
-                    id: newConferenceId,
-                    name: suggestionData.name,
-                    conf_start_date: suggestionData.conf_start_date,
-                    conf_end_date: suggestionData.conf_end_date,
-                    location: suggestionData.location,
-                    site_url: suggestionData.site_url,
-                    areas: newAreas,
-                    tags: suggestionData.tags || [],
-                };
-
-                const { error: confError } = await supabase.from('conferences').insert([newConference]);
-                if (confError) {
-                    alert(confError.code === '23505'
-                        ? `A conference with the id "${newConferenceId}" already exists. Approve this as an edit of that conference, or rename it before approving.`
-                        : `Error inserting new conference: ${confError.message}`);
-                    button.disabled = false;
-                    return;
-                }
-
-                if (suggestionData.deadlines && suggestionData.deadlines.length > 0) {
-                    const newDeadlines = suggestionData.deadlines.map(d => ({
-                        conference_id: newConferenceId,
-                        deadline_type: d.type,
-                        due_date: d.due
-                    }));
-                    const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
-                    if (insertError) {
-                        alert(`Conference was added, but deadline insertion failed: ${insertError.message}`);
-                        // Conference was still added, so we continue to the success step.
-                    }
-                }
-            }
-
-            // 3. 제안 처리 완료 후 공통 로직
-            const cleanupFailure = await writeAffectingRows(
-                supabase.from('conference_suggestions').delete().eq('id', suggestionId),
-                'Removing the processed suggestion'
-            );
-            if (cleanupFailure) {
-                alert(`The conference was saved, but the suggestion could not be cleared: ${cleanupFailure}`);
-                button.disabled = false;
-                fetchConferences();
-                return;
-            }
-            card.remove();
-            fetchConferences(); // 목록 새로고침
-            alert('Suggestion approved and applied successfully!');
+            await checkUserSession();
+        } catch (error) {
+            alert('Suggestion was not processed: ' + error.message);
+        } finally {
             button.disabled = false;
         }
-    }
-
-    // Conference ids are a slug plus the year. Most names already carry their
-    // year ("AAAI 2027"), so appending one unconditionally produced ids like
-    // aaai-2027-2027 — and a name whose year disagrees with its start date
-    // (ICML 2026 opening in 2025) got the wrong one. Trust the name when it
-    // ends in a year; otherwise fall back to the start date, then to today.
-    function buildConferenceId(name, confStartDate) {
-        const slug = String(name || '')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-
-        if (/-\d{4}$/.test(slug)) return slug;
-
-        const startYear = confStartDate ? new Date(confStartDate).getFullYear() : NaN;
-        const year = Number.isFinite(startYear) && startYear > 1970 ? startYear : new Date().getFullYear();
-
-        return slug ? `${slug}-${year}` : String(year);
     }
 
     // PostgREST reports plain success when row-level security filters every
     // target row away, so a blocked write is indistinguishable from a real one
     // unless we ask for the affected rows back. An empty result is a failure.
-    const RLS_HINT = 'The database rejected it silently, which means row-level security blocked the write. '
-        + 'Check that your account is listed in public.admin_users and that the table has an admin policy '
-        + 'covering this action (see supabase_repair.sql).';
+    const RLS_HINT = 'It may have been removed by another administrator, or your session may lack permission. Refresh and check your administrator membership.';
 
     async function writeAffectingRows(query, action) {
         const { data, error } = await query.select('id');
@@ -400,6 +254,10 @@
             return;
         }
 
+        if (data.areas != null && !CD.isAreasObject(data.areas)) {
+            alert('This conference has malformed category data. Repair it in the database before editing.');
+            return;
+        }
         QS('#editConfId').value = data.id;
         QS('#editConfName').value = data.name;
         QS('#editConfUrl').value = data.site_url;
@@ -408,8 +266,8 @@
         QS('#editConfEndDate').value = data.conf_end_date;
 
         areasContainer.innerHTML = '';
-        if (data.areas) {
-            for (const category in data.areas) {
+        if (CD.isAreasObject(data.areas)) {
+            for (const category of Object.keys(data.areas)) {
                 addAreaInput(category, data.areas[category].join(', '));
             }
         }
@@ -428,52 +286,29 @@
         const submitButton = event.target.querySelector('button[type="submit"]');
         submitButton.disabled = true;
 
-        const newAreas = {};
-        areasContainer.querySelectorAll('.area-group').forEach(group => {
-            const category = group.querySelector('.area-category').value.trim();
-            const subfields = group.querySelector('.area-subfields').value.trim().split(',').map(s => s.trim()).filter(Boolean);
-            if (category) {
-                newAreas[category] = subfields;
-            }
-        });
-
-        const updatedConferenceData = {
-            name: QS('#editConfName').value,
-            site_url: QS('#editConfUrl').value,
-            location: QS('#editConfLocation').value,
-            conf_start_date: QS('#editConfStartDate').value || null,
-            conf_end_date: QS('#editConfEndDate').value || null,
-            areas: newAreas,
-        };
-
-        const newDeadlines = [];
-        deadlinesContainer.querySelectorAll('.deadline-group').forEach(group => {
-            const type = group.querySelector('.deadline-type').value.trim();
-            const date = group.querySelector('.deadline-date').value;
-            const dueIso = CD.fromAoeDateTimeLocalToIso(date);
-            if (type && dueIso) {
-                newDeadlines.push({ conference_id: id, deadline_type: type, due_date: dueIso });
-            }
-        });
-
-        const confFailure = await writeAffectingRows(
-            supabase.from('conferences').update(updatedConferenceData).eq('id', id),
-            'Updating the conference'
-        );
-        if (confFailure) { alert(`Conference update failed: ${confFailure}`); submitButton.disabled = false; return; }
-
-        const { error: deleteError } = await supabase.from('deadlines').delete().eq('conference_id', id);
-        if (deleteError) { alert(`Clearing old deadlines failed: ${deleteError.message}`); submitButton.disabled = false; return; }
-
-        if (newDeadlines.length > 0) {
-            const { error: insertError } = await supabase.from('deadlines').insert(newDeadlines);
-            if (insertError) { alert(`Inserting new deadlines failed: ${insertError.message}`); submitButton.disabled = false; return; }
+        try {
+            const payload = {
+                name: QS('#editConfName').value.trim(),
+                site_url: QS('#editConfUrl').value.trim(),
+                location: QS('#editConfLocation').value.trim(),
+                conf_start_date: QS('#editConfStartDate').value || null,
+                conf_end_date: QS('#editConfEndDate').value || null,
+                areas: CD.collectAreas(areasContainer)
+            };
+            const problem = CD.validateConference(payload);
+            if (problem) throw new Error(problem);
+            const deadlines = CD.collectDeadlines(deadlinesContainer, '.deadline-type', '.deadline-date');
+            const { error } = await supabase.rpc('save_conference', {
+                p_id: id, p_conference: payload, p_deadlines: deadlines
+            });
+            if (error) throw error;
+            editModal.hide();
+            await checkUserSession();
+        } catch (error) {
+            alert('Conference was not updated: ' + error.message);
+        } finally {
+            submitButton.disabled = false;
         }
-
-        alert('Conference updated successfully!');
-        editModal.hide();
-        fetchConferences();
-        submitButton.disabled = false;
     }
 
     async function checkUserSession() {
@@ -484,25 +319,17 @@
             authControls.classList.remove('d-none');
             userEmailSpan.textContent = session.user.email;
 
-            try {
-                const [suggestionsResponse, conferencesResponse] = await Promise.all([
-                    supabase.from('conference_suggestions').select('*').order('created_at', { ascending: true }),
-                    supabase.from('conferences').select('*, deadlines(*)').order('name', { ascending: true })
-                ]);
-
-                if (suggestionsResponse.error) throw suggestionsResponse.error;
-                if (conferencesResponse.error) throw conferencesResponse.error;
-
-                const suggestions = suggestionsResponse.data || [];
-                const conferences = conferencesResponse.data || [];
-
-                renderSuggestions(suggestions, conferences);
-                renderConferences(conferences);
-
-            } catch (error) {
-                console.error('Error fetching admin data:', error);
-                suggestionsList.innerHTML = CD.createErrorHTML(`Failed to load data: ${error.message}`);
-            }
+            const [suggestionsResponse, conferencesResponse] = await Promise.allSettled([
+                CD.api.selectAll('conference_suggestions'),
+                CD.api.selectConferencesWithDeadlines()
+            ]);
+            const confResult = conferencesResponse.status === 'fulfilled' ? conferencesResponse.value : { error: conferencesResponse.reason };
+            const suggestionsResult = suggestionsResponse.status === 'fulfilled' ? suggestionsResponse.value : { error: suggestionsResponse.reason };
+            const conferences = confResult.data || [];
+            if (confResult.error) conferenceListDiv.innerHTML = CD.createErrorHTML('Failed to load conferences.');
+            else renderConferences(conferences.sort((a, b) => a.name.localeCompare(b.name)));
+            if (suggestionsResult.error) suggestionsList.innerHTML = CD.createErrorHTML('Failed to load suggestions.');
+            else renderSuggestions((suggestionsResult.data || []).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at))), conferences);
         } else {
             loginView.classList.remove('d-none');
             adminView.classList.add('d-none');

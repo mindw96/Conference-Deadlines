@@ -2,11 +2,17 @@
     const CD = window.ConferenceDeadlines = window.ConferenceDeadlines || {};
 
     function createConferenceEvent(item) {
+        const start = item.dates?.conf_start;
+        const last = item.dates?.conf_end || start;
+        if (!CD.validDateOnly(start) || !CD.validDateOnly(last) || last < start) return null;
+        const exclusiveEnd = new Date(last + 'T00:00:00Z');
+        exclusiveEnd.setUTCDate(exclusiveEnd.getUTCDate() + 1);
         return {
+            allDay: true,
             id: `${item.id}-conference`,
             title: item.name,
-            start: item.dates?.conf_start,
-            end: item.dates?.conf_end,
+            start,
+            end: exclusiveEnd.toISOString().slice(0, 10),
             location: item.location || '',
             description: `Conference Website: ${item.site || 'N/A'}`
         };
@@ -24,9 +30,10 @@
     }
 
     function generateCalendarLink(type, eventDetails) {
+        if (!eventDetails) return '#';
         const title = encodeURIComponent(eventDetails.title || '');
-        const startTime = CD.toUTCDateTimeStamp(eventDetails.start);
-        const endTime = CD.toUTCDateTimeStamp(eventDetails.end || eventDetails.start);
+        const startTime = eventStamp(eventDetails.start, eventDetails.allDay);
+        const endTime = eventStamp(eventDetails.end || eventDetails.start, eventDetails.allDay);
         const location = encodeURIComponent(eventDetails.location || '');
         const details = encodeURIComponent(eventDetails.description || '');
 
@@ -37,15 +44,37 @@
         }
 
         if (type === 'outlook') {
-            return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${startTime}&enddt=${endTime}&location=${location}&body=${details}`;
+            const outlookStart = encodeURIComponent(eventDetails.allDay ? eventDetails.start : new Date(eventDetails.start).toISOString());
+            const outlookEnd = encodeURIComponent(eventDetails.allDay ? eventDetails.end : new Date(eventDetails.end || eventDetails.start).toISOString());
+            return `https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=${title}&startdt=${outlookStart}&enddt=${outlookEnd}&location=${location}&body=${details}${eventDetails.allDay ? '&allday=true' : ''}`;
         }
 
         return '#';
     }
 
+    function eventStamp(value, allDay) {
+        return allDay ? (CD.validDateOnly(value) ? value.replace(/-/g, '') : '') : CD.toUTCDateTimeStamp(value);
+    }
+
+    // RFC 5545 limits content lines to 75 UTF-8 octets (continuations start with one space).
+    function foldLine(line) {
+        const lines = [];
+        let part = '';
+        const encoder = new TextEncoder();
+        for (const char of line) {
+            if (encoder.encode(part + char).length > 75) { lines.push(part); part = ' '; }
+            part += char;
+        }
+        lines.push(part);
+        return lines.join('\r\n');
+    }
+
     function generateICSContent(eventDetails) {
-        const startDate = CD.toUTCDateTimeStamp(eventDetails.start);
-        const endDate = CD.toUTCDateTimeStamp(eventDetails.end || eventDetails.start);
+        if (!eventDetails) throw new Error('Conference dates are unavailable.');
+        const startDate = eventStamp(eventDetails.start, eventDetails.allDay);
+        const endDate = eventStamp(eventDetails.end || eventDetails.start, eventDetails.allDay);
+        if (!startDate || !endDate) throw new Error('Invalid calendar dates.');
+        const dateType = eventDetails.allDay ? ';VALUE=DATE' : '';
 
         return [
             'BEGIN:VCALENDAR',
@@ -54,14 +83,14 @@
             'BEGIN:VEVENT',
             `UID:${CD.escapeICSText(eventDetails.id)}@alldeadlines.info`,
             `DTSTAMP:${CD.toUTCDateTimeStamp(new Date())}`,
-            `DTSTART:${startDate}`,
-            `DTEND:${endDate}`,
+            `DTSTART${dateType}:${startDate}`,
+            `DTEND${dateType}:${endDate}`,
             `SUMMARY:${CD.escapeICSText(eventDetails.title)}`,
             `DESCRIPTION:${CD.escapeICSText(eventDetails.description)}`,
             `LOCATION:${CD.escapeICSText(eventDetails.location)}`,
             'END:VEVENT',
             'END:VCALENDAR'
-        ].join('\r\n');
+        ].map(foldLine).join('\r\n') + '\r\n';
     }
 
     function downloadICSFile(eventDetails) {
