@@ -12,6 +12,7 @@
                 .filter(deadline => deadline.due && !Number.isNaN(Date.parse(deadline.due)))
                 .map(deadline => ({
                     type: deadline.type,
+                    originalDue: deadline.due,
                     due: new Date(deadline.due)
                 }))
                 .sort((a, b) => a.due - b.due);
@@ -35,6 +36,7 @@
             ...raw,
             areas,
             malformedAreas: raw.areas != null && !CD.isAreasObject(raw.areas),
+            malformedDeadlines: Array.isArray(raw.deadlines) && raw.deadlines.length !== deadlines.length,
             dates,
             site: raw.site || raw.site_url,
             tags: Array.isArray(raw.tags) ? raw.tags : [],

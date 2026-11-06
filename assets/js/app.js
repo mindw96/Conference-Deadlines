@@ -48,7 +48,7 @@
 
         state.filtered = state.items.filter(item => {
             if (!state.showPast) {
-                const confEnd = item.dates?.conf_end;
+                const confEnd = item.dates?.conf_end || item.dates?.conf_start;
                 if (confEnd && confEnd < today) {
                     return false;
                 }
@@ -309,14 +309,15 @@
                 state.items = items;
                 QS('#retryLoad').classList.add('d-none');
                 QS('#dataStatus').textContent = source === 'demo'
-                    ? 'Bundled sample data — historical examples, not current deadlines.'
+                    ? 'Bundled snapshot — includes historical examples; not live conference data.'
                     : 'Live conference data · loaded ' + new Date().toLocaleTimeString();
                 state.source = source;
                 document.querySelectorAll('button[data-bs-target="#suggestModal"]').forEach(button => { button.disabled = source === 'demo'; });
                 rebuildFilters();
                 render();
                 CD.render.startCountdownTimer(() => {
-                    if (renderedDay !== CD.localDateKey() || state.items.some(item => item.nextDue && item.nextDue <= new Date())) render();
+                    const now = new Date();
+                    if (renderedDay !== CD.localDateKey(now) || state.items.some(item => item.nextDue && item.nextDue <= now)) render();
                 });
             })
             .catch(showLoadError);

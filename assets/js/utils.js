@@ -199,19 +199,26 @@
         return validateConference({ ...suggestion, areas: suggestionAreas(suggestion) });
     }
 
-    function addAreaInput(container, category = '', subfields = '') {
+    function addAreaInput(container, category = '', subfields = []) {
         const div = document.createElement('div');
         div.className = 'input-group mb-2 area-group';
         div.innerHTML = '<input class="form-control area-category" aria-label="Category" maxlength="100" placeholder="Category (e.g., AI)" value="' + escapeAttr(category) + '">'
-            + '<input class="form-control area-subfields" aria-label="Subfields" placeholder="Subfields (comma separated)" value="' + escapeAttr(subfields) + '">'
+            + '<input class="form-control area-subfields" aria-label="Subfields" placeholder="Subfields (comma separated)" value="' + escapeAttr(subfields.join(', ')) + '" data-original-subfields="' + escapeAttr(JSON.stringify(subfields)) + '">'
             + '<button class="btn btn-outline-danger remove-area-btn" type="button" aria-label="Remove category">&times;</button>';
         container.appendChild(div);
     }
 
     function collectAreas(container) {
         const entries = QSA('.area-group', container).map(group => {
-            const category = QS('.area-category', group).value.trim();
-            const fields = QS('.area-subfields', group).value.split(',').map(s => s.trim()).filter(Boolean);
+            const categoryInput = QS('.area-category', group);
+            // Text inputs strip line breaks; compare against that displayed form before preserving the original.
+            const category = categoryInput.value === categoryInput.defaultValue.replace(/[\r\n]/g, '')
+                ? categoryInput.defaultValue : categoryInput.value.trim();
+            const input = QS('.area-subfields', group);
+            // Preserve commas inside existing subfield names when only other fields change.
+            const fields = input.value === input.defaultValue.replace(/[\r\n]/g, '')
+                ? JSON.parse(input.dataset.originalSubfields)
+                : input.value.split(',').map(s => s.trim()).filter(Boolean);
             if (!category && fields.length) throw new Error('Enter a category for each group of subfields.');
             return [category, fields];
         }).filter(([category]) => category);
@@ -224,9 +231,12 @@
     function collectDeadlines(container, typeSelector, dueSelector) {
         const deadlines = QSA('.input-group', container).map(group => {
             const type = QS(typeSelector, group)?.value.trim() || '';
-            const due = QS(dueSelector, group)?.value || '';
+            const input = QS(dueSelector, group);
+            const due = input?.value || '';
             if (!type && !due) return null;
-            const iso = fromAoeDateTimeLocalToIso(due);
+            // The minute-resolution form must not round an unchanged timestamp.
+            const iso = due && due === input.defaultValue && input.dataset.originalDue
+                ? input.dataset.originalDue : fromAoeDateTimeLocalToIso(due);
             if (!type || !iso) throw new Error('Enter both a type and a valid date for every deadline, or remove the row.');
             return { type, due: iso };
         }).filter(Boolean);

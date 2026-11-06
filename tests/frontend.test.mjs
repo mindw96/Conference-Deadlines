@@ -62,6 +62,7 @@ test('timed deadlines retain UTC instant; ICS escapes CR injection and folds UTF
     const event=CD.calendar.createDeadlineEvent({id:'x',name:'연구'.repeat(60)}, {type:'Paper\rATTENDEE:bad',due:'2027-01-01T11:59:00Z'},0);
     const ics=CD.calendar.generateICSContent(event);
     assert.ok(ics.includes('DTSTART:20270101T115900Z'));
+    assert.ok(!ics.includes('DTEND:'), 'instant deadlines omit DTEND instead of specifying an invalid equal end');
     assert.ok(!ics.includes('\rATTENDEE'));
     for (const line of ics.split('\r\n')) assert.ok(Buffer.byteLength(line) <= 75);
     assert.equal(CD.fromAoeDateTimeLocalToIso('2027-01-01T23:59'),'2027-01-02T11:59:00.000Z');

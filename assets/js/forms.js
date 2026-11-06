@@ -45,7 +45,7 @@
         const formattedDate = CD.formatForDateTimeLocalInput(date);
         div.innerHTML = `
             <input type="text" class="form-control deadline-type" placeholder="Type (e.g., Full Paper)" value="${CD.escapeAttr(type)}">
-            <input type="datetime-local" class="form-control deadline-date" value="${CD.escapeAttr(formattedDate)}">
+            <input type="datetime-local" class="form-control deadline-date" value="${CD.escapeAttr(formattedDate)}" data-original-due="${CD.escapeAttr(date)}">
             <button class="btn btn-outline-danger remove-deadline-btn" type="button" aria-label="Remove deadline">&times;</button>
         `;
         container.appendChild(div);
@@ -163,6 +163,11 @@
                 alert('This conference has malformed category data. Ask an administrator to repair it before submitting edits.');
                 return;
             }
+            if (item.malformedDeadlines) {
+                event.preventDefault();
+                alert('This conference has malformed deadline data. Ask an administrator to repair it before submitting edits.');
+                return;
+            }
 
             suggestEditForm.reset();
             areasContainer.textContent = '';
@@ -175,10 +180,10 @@
             CD.QS('#suggestEditConfStartDate').value = item.dates?.conf_start || '';
             CD.QS('#suggestEditConfEndDate').value = item.dates?.conf_end || '';
 
-            Object.entries(item.areas).forEach(([category, fields]) => CD.addAreaInput(areasContainer, category, fields.join(', ')));
+            Object.entries(item.areas).forEach(([category, fields]) => CD.addAreaInput(areasContainer, category, fields));
 
             if (item.deadlines && item.deadlines.length > 0) {
-                item.deadlines.forEach(deadline => addSuggestEditDeadlineInput(suggestEditDeadlinesContainer, deadline.type, deadline.due));
+                item.deadlines.forEach(deadline => addSuggestEditDeadlineInput(suggestEditDeadlinesContainer, deadline.type, deadline.originalDue));
             } else {
                 addSuggestEditDeadlineInput(suggestEditDeadlinesContainer);
             }

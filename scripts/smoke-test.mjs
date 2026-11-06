@@ -90,7 +90,7 @@ function checkConferenceData() {
         for (const deadline of conference.deadlines) {
             assert(typeof deadline.type === 'string' && deadline.type, `${conference.id} deadline.type is required`);
             assert(typeof deadline.due === 'string' && !Number.isNaN(Date.parse(deadline.due)), `${conference.id} deadline.due must be parseable`);
-            assert(deadline.due.includes('T11:59:00Z'), `${conference.id} deadline should store 23:59 AOE as 11:59 UTC`);
+            assert(deadline.due.endsWith('Z'), `${conference.id} deadline must store a UTC instant, preserving the official source time`);
         }
     }
 }

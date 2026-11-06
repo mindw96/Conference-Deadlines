@@ -19,7 +19,7 @@ Live Site -> [alldeadlines.info](https://alldeadlines.info)
 * **Suggest a Conference:** Submit a new conference or suggest edits through the public form.
 * **Admin Review Flow:** Supabase Auth users listed in `public.admin_users` can review, approve, edit, or delete records.
 * **Light/Dark Mode:** Switch between light and dark themes.
-* **Explicit Sample Mode:** Local development can use historical sample data with ?demo=1. Live failures show a retry action instead of stale examples.
+* **Explicit Sample Mode:** Local development can use a bundled data snapshot with ?demo=1. Live failures show a retry action instead of stale examples.
 
 ## Planned
 
@@ -59,6 +59,15 @@ All submission deadlines are displayed as AOE (UTC-12).
 
 Store deadline timestamps as UTC instants. For example, a deadline announced as `2025-09-19 23:59 AOE` should be stored as `2025-09-20T11:59:00Z`.
 
+A conference with a start date but no end date is treated as a one-day event,
+both in calendar exports and the past-conference filter. Deadline ICS exports
+represent an instant and omit an equal start/end pair.
+
+Editing other fields preserves unchanged deadline precision and category/subfield
+names. The deadline inputs edit AOE minutes; changing a deadline resets its seconds
+to zero. Public edit suggestions are blocked when existing deadlines cannot be
+displayed, so a name-only edit cannot silently remove them.
+
 ## Local Development
 
 This project has no build step.
@@ -74,7 +83,7 @@ Then open:
 http://127.0.0.1:4173/
 ```
 
-The default page reads the configured live database. To use bundled historical examples without live reads or form submissions, open /?demo=1 on localhost. Never use sample data as a current deadline source.
+The default page reads the configured live database. To use the bundled snapshot without live reads or form submissions, open /?demo=1 on localhost. It includes historical examples and a dated AI conference snapshot; check the official conference site before relying on a deadline.
 
 Run checks:
 
@@ -132,6 +141,34 @@ Deleted targets and already processed suggestions produce explicit errors.
 The sample seed is optional and intended for a new demo project. Rerunning it
 only adds missing sample conferences and their deadlines, without replacing
 existing conferences or pending suggestions.
+
+### Major AI conference snapshot
+
+`data/ai-conferences.json` records 16 officially announced editions across
+NeurIPS, ICLR, ICML, ACL, EMNLP, NAACL, EACL, CVPR, ICCV, ECCV, AAAI, IJCAI,
+and KDD, checked on November 7, 2026. Every record includes official source
+links; deadlines retain the source time and its UTC conversion. ARR submission
+and conference commitment are separate stages. Unannounced dates stay empty.
+ICCV 2027 dates are withheld because its official pages disagree; ECCV 2028's
+host city comes from the official conference account announcement.
+
+Update the snapshot, then regenerate its SQL:
+
+```bash
+node scripts/generate-conference-import.mjs
+npm run check
+```
+
+Run `supabase_ai_conferences.sql` in the target project's SQL Editor to publish
+the data. It adds missing conferences and deadline instants, reuses existing
+conference IDs by name, and preserves all existing rows and administrator edits.
+Ambiguous matches abort the transaction. Publishing GitHub Pages alone does not
+update Supabase. `conferences.json` also contains these editions for local demos.
+
+The snapshot covers main research tracks, not every workshop or special track.
+For date-only/end-of-day AoE announcements, the stored minute is 23:59; this is a
+display convention, not a claim about official seconds. ECCV 2026 instead uses
+the published 23:00 CET deadlines (22:00 UTC). All dates are displayed in AoE.
 
 ## How to Contribute
 

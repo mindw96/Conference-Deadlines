@@ -6,7 +6,7 @@ function conference(index=0) {
         conf_start_date:'2027-12-30',conf_end_date:'2028-01-02',tags:[],
         deadlines:index===0?[{deadline_type:'Abstract',due_date:'2027-01-01T00:00:02Z'},{deadline_type:'Paper',due_date:'2027-01-01T00:00:04Z'}]:[] };
 }
-async function fixture(page,{admin=false,fail=false,largeAreas=false}={}) {
+async function fixture(page,{admin=false,fail=false,largeAreas=false,preciseValues=false,badDeadlines=false}={}) {
     const controller={fail,posts:[],rpcs:[],suggestions:[
         {id:'bad',name:'Malformed legacy',is_edit:false,site_url:'https://example.org',deadlines:[null]},
         {id:'number',name:'Numeric due',is_edit:false,site_url:'https://example.org',deadlines:[{type:'X',due:123}]},
@@ -32,6 +32,11 @@ async function fixture(page,{admin=false,fail=false,largeAreas=false}={}) {
         }
         let rows=table==='conference_suggestions'?controller.suggestions:Array.from({length:30},(_,i)=>conference(i));
         if (largeAreas && table === 'conferences') rows[0].areas = {AI:['x'.repeat(105)],CS:['HCI']};
+        if (preciseValues && table === 'conferences') {
+            rows[0].areas = {' AI\nLab ':['Vision\nLanguage, NLP','NLP']};
+            rows[0].deadlines = [{deadline_type:'Paper',due_date:'2027-01-01T11:59:59.123456Z'}];
+        }
+        if (badDeadlines && table === 'conferences') rows[0].deadlines.push({deadline_type:'Legacy',due_date:'infinity'});
         const id=url.searchParams.get('id');
         if(id?.startsWith('gt.')) rows=rows.filter(row=>row.id>id.slice(3));
         if(id?.startsWith('eq.')) return send(rows.find(row=>row.id===id.slice(3)));
@@ -64,6 +69,58 @@ test('pagination, prototype categories, debounce and expiry stay usable',async({
     await expect(page.locator('.cd-deadline-badge')).toHaveClass(/is-closed/);
     expect(errors).toEqual([]);
     await page.screenshot({path:test.info().outputPath('public.png'),fullPage:true});
+});
+
+test('name-only edits preserve timestamp precision and commas inside existing subfields',async({page})=>{
+    const controller=await fixture(page,{admin:true,preciseValues:true});
+    const areas={' AI\nLab ':['Vision\nLanguage, NLP','NLP']};
+    const deadlines=[{type:'Paper',due:'2027-01-01T11:59:59.123456Z'}];
+    page.on('dialog',dialog=>dialog.accept());
+    await page.goto('/');
+    const edit=page.getByRole('button',{name:'Suggest an edit for Boundary Conference'});
+    await edit.click();
+    await page.clock.runFor(500);
+    await page.locator('#suggestEditConfName').fill('Name-only correction');
+    await page.locator('#suggestEditForm button[type=submit]').click();
+    await expect.poll(()=>controller.posts.length).toBe(1);
+    expect(controller.posts[0][0].deadlines).toEqual(deadlines);
+    expect(controller.posts[0][0].areas).toEqual(areas);
+    await page.clock.runFor(500);
+    await expect(page.locator('#suggestEditModal')).not.toBeVisible();
+
+    await edit.click();
+    await page.clock.runFor(500);
+    await page.locator('#suggestEditDeadlinesContainer .deadline-date').fill('2027-01-02T23:59');
+    await page.locator('#suggestEditAreasContainer .area-subfields').fill('CV, NLP');
+    await page.locator('#suggestEditAreasContainer .area-category').fill('AI');
+    await page.locator('#suggestEditForm button[type=submit]').click();
+    await expect.poll(()=>controller.posts.length).toBe(2);
+    expect(controller.posts[1][0].deadlines).toEqual([{type:'Paper',due:'2027-01-03T11:59:00.000Z'}]);
+    expect(controller.posts[1][0].areas).toEqual({AI:['CV','NLP']});
+
+    await page.goto('/admin.html');
+    await page.locator('#conference-list [data-id="conf-000"] .edit-btn').click();
+    await page.clock.runFor(500);
+    await page.locator('#editConfName').fill('Admin name-only correction');
+    await page.locator('#editForm button[type=submit]').click();
+    await expect.poll(()=>controller.rpcs.length).toBe(1);
+    expect(controller.rpcs[0].body.p_deadlines).toEqual(deadlines);
+    expect(controller.rpcs[0].body.p_conference.areas).toEqual(areas);
+});
+
+test('public edits cannot silently remove malformed existing deadlines',async({page})=>{
+    const controller=await fixture(page,{badDeadlines:true});
+    const dialogs=[];
+    page.on('dialog',dialog=>{dialogs.push(dialog.message());return dialog.accept();});
+    await page.goto('/');
+    await page.getByRole('button',{name:'Suggest an edit for Boundary Conference'}).click();
+    await expect.poll(()=>dialogs.length).toBe(1);
+    expect(dialogs[0]).toContain('malformed deadline data');
+    await expect(page.locator('#suggestEditModal')).not.toBeVisible();
+    expect(controller.posts).toEqual([]);
+    await page.getByRole('button',{name:'Suggest an edit for Conference 1',exact:true}).click();
+    await page.clock.runFor(500);
+    await expect(page.locator('#suggestEditModal')).toBeVisible();
 });
 test('edit suggestions keep all categories; partial deadlines cannot be silently dropped',async({page})=>{
     const controller=await fixture(page);

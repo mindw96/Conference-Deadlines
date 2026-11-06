@@ -84,7 +84,8 @@
             `UID:${CD.escapeICSText(eventDetails.id)}@alldeadlines.info`,
             `DTSTAMP:${CD.toUTCDateTimeStamp(new Date())}`,
             `DTSTART${dateType}:${startDate}`,
-            `DTEND${dateType}:${endDate}`,
+            // An omitted end represents an instant; an equal DTSTART/DTEND is invalid in RFC 5545.
+            ...(endDate === startDate ? [] : [`DTEND${dateType}:${endDate}`]),
             `SUMMARY:${CD.escapeICSText(eventDetails.title)}`,
             `DESCRIPTION:${CD.escapeICSText(eventDetails.description)}`,
             `LOCATION:${CD.escapeICSText(eventDetails.location)}`,

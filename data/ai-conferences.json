@@ -1,0 +1,714 @@
+{
+  "verified_on": "2026-11-07",
+  "scope": "Officially announced major AI conference editions. Main research submission stages only; unknown dates stay null. Date-only/end-of-day AoE deadlines use 23:59 minute precision.",
+  "conferences": [
+    {
+      "id": "aaai-2027",
+      "name": "AAAI 2027",
+      "site": "https://aaai.org/conference/aaai/aaai-27/",
+      "location": "Montréal, Canada",
+      "dates": {
+        "conf_start": "2027-02-16",
+        "conf_end": "2027-02-23"
+      },
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "Planning",
+          "Reasoning"
+        ]
+      },
+      "deadlines": [
+        {
+          "type": "Abstract",
+          "due": "2026-07-22T11:59:00Z",
+          "original": "2026-07-21 23:59 AoE (UTC-12)"
+        },
+        {
+          "type": "Full paper",
+          "due": "2026-07-29T11:59:00Z",
+          "original": "2026-07-28 23:59 AoE (UTC-12)"
+        },
+        {
+          "type": "Supplementary material and code",
+          "due": "2026-08-01T11:59:00Z",
+          "original": "2026-07-31 23:59 AoE (UTC-12)"
+        }
+      ],
+      "timezone": "AOE (UTC-12)",
+      "tags": [],
+      "note": "Main technical track. All listed submission deadlines have passed; other tracks have separate calls.",
+      "sources": [
+        {
+          "url": "https://aaai.org/conference/aaai/aaai-27/",
+          "evidence": "February16–23,2027 Montréal. Abstract July21,2026, full papers July28, supplementary July31; all due11:59PM UTC-12."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "acl-2027",
+      "name": "ACL 2027",
+      "areas": {
+        "AI": [
+          "NLP"
+        ]
+      },
+      "location": "Kyoto, Japan",
+      "dates": {
+        "conf_start": "2027-08-17",
+        "conf_end": "2027-08-22"
+      },
+      "site": "https://2027.aclweb.org/",
+      "deadlines": [
+        {
+          "type": "ARR submission (long & short papers)",
+          "due": "2027-01-05T11:59:00Z",
+          "original_date": "2027-01-04",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2027.aclweb.org/calls/main/"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ARR"
+      ],
+      "note": "Officially verified 2026-11-07. ARR submission and venue commitment are separate stages; ACL commitment deadline is not yet announced. Dates include tutorials and workshops; main conference August 20–22.",
+      "sources": [
+        {
+          "url": "https://2027.aclweb.org/",
+          "evidence": "Kyoto, Japan August 17–22, 2027; ARR submission January 4, 2027; commitment TBA; all deadlines 11.59 pm UTC -12h."
+        },
+        {
+          "url": "https://2027.aclweb.org/calls/main/",
+          "evidence": "ARR submission deadline (long & short papers) Jan 4, 2027; all deadlines 11:59PM UTC-12:00."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "cvpr-2027",
+      "name": "CVPR 2027",
+      "areas": {
+        "AI": [
+          "CV",
+          "ML"
+        ]
+      },
+      "location": "Seattle, Washington, United States",
+      "dates": {
+        "conf_start": "2027-06-20",
+        "conf_end": "2027-06-25"
+      },
+      "deadlines": [
+        {
+          "type": "Abstract / Paper enrollment",
+          "due": "2026-11-11T11:59:00Z",
+          "original": "2026-11-10 23:59 AOE (UTC-12)",
+          "source": "https://cvpr.thecvf.com/Conferences/2027/CallForPapers"
+        },
+        {
+          "type": "Full paper",
+          "due": "2026-11-17T11:59:00Z",
+          "original": "2026-11-16 23:59 AOE (UTC-12)",
+          "source": "https://cvpr.thecvf.com/Conferences/2027/CallForPapers"
+        },
+        {
+          "type": "Supplementary materials",
+          "due": "2026-11-24T11:59:00Z",
+          "original": "2026-11-23 23:59 AOE (UTC-12)",
+          "source": "https://cvpr.thecvf.com/Conferences/2027/CallForPapers"
+        }
+      ],
+      "site": "https://cvpr.thecvf.com/Conferences/2027",
+      "timezone": "AOE (UTC-12)",
+      "tags": [],
+      "note": "Official dates verified 2026-11-07. Workshops/tutorials June 20-21; main conference June 22-25. Paper enrollment is the abstract submission deadline.",
+      "sources": [
+        {
+          "url": "https://cvpr.thecvf.com/Conferences/2027",
+          "evidence": "Seattle WA June 20–25, 2027"
+        },
+        {
+          "url": "https://cvpr.thecvf.com/Conferences/2027/Dates",
+          "evidence": "Workshops and Tutorials June 20-21, 2027; Main Conference Sessions June 22-25, 2027."
+        },
+        {
+          "url": "https://cvpr.thecvf.com/Conferences/2027/CallForPapers",
+          "evidence": "Paper Enrollment Deadline Nov 10, 2026 11:59 PM AOE; Submission Deadline Nov 16, 2026 11:59 PM AOE; Supplementary Materials Deadline Nov 23, 2026 11:59 PM AOE."
+        },
+        {
+          "url": "https://cvpr.thecvf.com/Conferences/2027/AuthorGuidelines",
+          "evidence": "Abstract submission deadline (Nov 10, 2026); abstract submission (a.k.a. paper enrollment) requires title, abstract and all co-authors."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "eacl-2027",
+      "name": "EACL 2027",
+      "areas": {
+        "AI": [
+          "NLP"
+        ]
+      },
+      "location": "Athens, Greece",
+      "dates": {
+        "conf_start": "2027-03-09",
+        "conf_end": "2027-03-14"
+      },
+      "site": "https://2027.eacl.org/",
+      "deadlines": [
+        {
+          "type": "ARR submission (long & short papers)",
+          "due": "2026-08-04T11:59:00Z",
+          "original_date": "2026-08-03",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2027.eacl.org/calls/papers/"
+        },
+        {
+          "type": "EACL commitment",
+          "due": "2026-10-12T11:59:00Z",
+          "original_date": "2026-10-11",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2027.eacl.org/calls/papers/"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ARR"
+      ],
+      "note": "Officially verified 2026-11-07. Main-track submission and commitment deadlines have passed. Conference dates include workshops and tutorials.",
+      "sources": [
+        {
+          "url": "https://2027.eacl.org/",
+          "evidence": "Athens, Greece March 9-14, 2027."
+        },
+        {
+          "url": "https://2027.eacl.org/calls/papers/",
+          "evidence": "ARR submission deadline Aug 3, 2026; EACL commitment deadline October 11, 2026; conference 9–14 March, 2027; all deadlines 11:59PM UTC-12:00."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "eccv-2026",
+      "name": "ECCV 2026",
+      "areas": {
+        "AI": [
+          "CV",
+          "ML"
+        ]
+      },
+      "location": "Malmö, Sweden",
+      "dates": {
+        "conf_start": "2026-09-08",
+        "conf_end": "2026-09-12"
+      },
+      "deadlines": [
+        {
+          "type": "Paper registration",
+          "due": "2026-02-26T22:00:00Z",
+          "original": "2026-02-26 23:00 CET (UTC+1)",
+          "source": "https://eccv.ecva.net/Conferences/2026/CallForPapers"
+        },
+        {
+          "type": "Full paper",
+          "due": "2026-03-05T22:00:00Z",
+          "original": "2026-03-05 23:00 CET (UTC+1)",
+          "source": "https://eccv.ecva.net/Conferences/2026/CallForPapers"
+        },
+        {
+          "type": "Supplementary materials",
+          "due": "2026-03-12T22:00:00Z",
+          "original": "2026-03-12 23:00 CET (UTC+1)",
+          "source": "https://eccv.ecva.net/Conferences/2026/CallForPapers"
+        }
+      ],
+      "site": "https://eccv.ecva.net/Conferences/2026/CallForPapers",
+      "timezone": "CET (UTC+1)",
+      "tags": [],
+      "note": "Past edition, retained for historical reference. Official submission deadlines were 23:00 CET, not end-of-day AoE; stored UTC instants must not be changed to 11:59Z. Workshops September 8-9; main conference September 10-12.",
+      "sources": [
+        {
+          "url": "https://eccv.ecva.net/",
+          "evidence": "September 8 – 12th, 2026 in Malmö, Sweden. Malmö Arena and Malmömässan."
+        },
+        {
+          "url": "https://eccv.ecva.net/Conferences/2026/CallForPapers",
+          "evidence": "Paper Registration Deadline Feb 26, 2026 11:00 PM CET; Submission Deadline Mar 05, 2026 11:00 PM CET; Supplementary Materials Deadline Mar 12, 2026 11:00 PM CET."
+        },
+        {
+          "url": "https://eccv.ecva.net/Conferences/2026/Dates",
+          "evidence": "Paper registration Feb 26 '26 10:00 PM UTC; Main Conference Submission Mar 05 '26 10:00 PM UTC; Supplemental materials Mar 12 '26 10:00 PM UTC."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "eccv-2028",
+      "name": "ECCV 2028",
+      "areas": {
+        "AI": [
+          "CV",
+          "ML"
+        ]
+      },
+      "location": "Bucharest, Romania",
+      "dates": {
+        "conf_start": null,
+        "conf_end": null
+      },
+      "deadlines": [],
+      "site": "https://www.ecva.net/",
+      "timezone": "Not announced",
+      "tags": [
+        "Dates TBA",
+        "Deadline TBA"
+      ],
+      "note": "Host city announced by the official ECCV social account on 2026-09-12. Conference dates and submission deadlines not yet announced as of 2026-11-07. Website links to the organizer until a dedicated edition site is announced.",
+      "sources": [
+        {
+          "url": "https://www.linkedin.com/posts/european-conference-on-computer-vision_eccv2028-activity-7504651424622997505-pThl",
+          "published": "2026-09-12",
+          "author": "European Conference on Computer Vision",
+          "evidence": "Next stop: #ECCV2028 Bucharest, Romania"
+        },
+        {
+          "url": "https://www.ecva.net/",
+          "evidence": "ECVA organizes the European Conference on Computer Vision (ECCV) series. Current organizer page has no 2028 dates."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "emnlp-2026",
+      "name": "EMNLP 2026",
+      "areas": {
+        "AI": [
+          "NLP"
+        ]
+      },
+      "location": "Budapest, Hungary",
+      "dates": {
+        "conf_start": "2026-10-24",
+        "conf_end": "2026-10-29"
+      },
+      "site": "https://2026.emnlp.org/",
+      "deadlines": [
+        {
+          "type": "ARR submission (long & short papers)",
+          "due": "2026-05-26T11:59:00Z",
+          "original_date": "2026-05-25",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2026.emnlp.org/calls/main_conference_papers/"
+        },
+        {
+          "type": "EMNLP commitment",
+          "due": "2026-08-03T11:59:00Z",
+          "original_date": "2026-08-02",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2026.emnlp.org/calls/main_conference_papers/"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ARR"
+      ],
+      "note": "Officially verified 2026-11-07. This edition and its submission deadlines have passed; retained as the latest completed EMNLP edition. May ARR submissions had to designate EMNLP to be eligible for commitment.",
+      "sources": [
+        {
+          "url": "https://2026.emnlp.org/",
+          "evidence": "Budapest, Hungary October 24–29, 2026."
+        },
+        {
+          "url": "https://2026.emnlp.org/calls/main_conference_papers/",
+          "evidence": "ARR submission May 25, 2026; EMNLP commitment August 2, 2026; all deadlines 11:59PM UTC-12:00."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "emnlp-2027",
+      "name": "EMNLP 2027",
+      "areas": {
+        "AI": [
+          "NLP"
+        ]
+      },
+      "location": "TBA (Mexico or Central America, tentative)",
+      "dates": {
+        "conf_start": null,
+        "conf_end": null
+      },
+      "site": "https://2027.eacl.org/calls/workshops/",
+      "deadlines": [],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ARR",
+        "Dates TBA"
+      ],
+      "note": "Official joint ACL workshop call tentatively places EMNLP 2027 in early November in Mexico or Central America. Exact dates, city, conference website and main-track submission/commitment deadlines are not announced as of 2026-11-07. No estimated deadline has been inserted.",
+      "sources": [
+        {
+          "url": "https://2027.eacl.org/calls/workshops/",
+          "evidence": "EMNLP 2027 ... hybrid ... tentatively scheduled for early November 2027 and physically held in Mexico or Central America; EMNLP 2027 (TBA) - Conference dates: TBA."
+        },
+        {
+          "url": "https://sigdat.org/",
+          "evidence": "SIGDAT organizes EMNLP; site latest edition announcement links EMNLP 2026."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "iccv-2027",
+      "name": "ICCV 2027",
+      "areas": {
+        "AI": [
+          "CV",
+          "ML"
+        ]
+      },
+      "location": "Hong Kong",
+      "dates": {
+        "conf_start": null,
+        "conf_end": null
+      },
+      "deadlines": [],
+      "site": "https://iccv.thecvf.com/Conferences/2027/Dates",
+      "timezone": "Not announced",
+      "tags": [
+        "Dates under review",
+        "Deadline TBA"
+      ],
+      "note": "Conference dates need clarification: the official Dates page lists workshops October 3-4 and main conference October 5-7, while the homepage venue paragraph says October 2-8, 2027. Calendar dates are withheld until clarified. Author submission deadlines not yet announced as of 2026-11-07.",
+      "sources": [
+        {
+          "url": "https://iccv.thecvf.com/Conferences/2027/Dates",
+          "evidence": "The biennial conference takes place Sun. Oct 3rd through Thu the 7th, 2027; Workshops and Tutorials Oct 3-4; Main Conferences Oct 5-7. No paper submission dates listed."
+        },
+        {
+          "url": "https://iccv.thecvf.com/",
+          "evidence": "Header: Hong Kong Convention and Expo Center October 3–7, 2027. Venue paragraph: October 2–8, 2027."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "iclr-2027",
+      "name": "ICLR 2027",
+      "site": "https://iclr.cc/Conferences/2027",
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "RL"
+        ]
+      },
+      "location": "California, United States (venue to be announced)",
+      "dates": {
+        "conf_start": "2027-04-26",
+        "conf_end": "2027-04-30"
+      },
+      "deadlines": [
+        {
+          "type": "Abstract",
+          "due": "2026-09-19T11:59:00Z",
+          "original": "2026-09-18 23:59 AOE (UTC-12)",
+          "source": "https://www.iclr.cc/Conferences/2027/CallForPapers",
+          "evidence": "Abstract deadline Sep 18, 2026 11:59 PM AOE"
+        },
+        {
+          "type": "Full Paper",
+          "due": "2026-09-26T11:59:00Z",
+          "original": "2026-09-25 23:59 AOE (UTC-12)",
+          "source": "https://www.iclr.cc/Conferences/2027/CallForPapers",
+          "evidence": "Paper deadline Sep 25, 2026 11:59 PM AOE"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ML"
+      ],
+      "note": "Conference April 26–30, 2027; main conference April 26–28 and workshops April 29–30. Official homepage lists California; city/venue not announced.",
+      "sources": [
+        {
+          "url": "https://iclr.cc/Conferences/2027",
+          "evidence": "California April 26-30, 2027; Venue information will be posted here."
+        },
+        {
+          "url": "https://www.iclr.cc/Conferences/2027/CallForPapers",
+          "evidence": "All times are UTC-12h, aka Anywhere on Earth; Abstract Sep18 2026 11:59PM AOE; Paper Sep25 2026 11:59PM AOE."
+        },
+        {
+          "url": "https://www.iclr.cc/Conferences/2027/AuthorGuidelines",
+          "evidence": "Abstract Sep18 2026 11:59PM AOE; full paper Sep25 2026 11:59PM AOE."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "icml-2027",
+      "name": "ICML 2027",
+      "site": "https://icml.cc/",
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "RL"
+        ]
+      },
+      "location": "Rio de Janeiro, Brazil",
+      "dates": {
+        "conf_start": "2027-07-31",
+        "conf_end": "2027-08-06"
+      },
+      "deadlines": [],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ML",
+        "Deadline TBA"
+      ],
+      "note": "Riocentro, Rio de Janeiro. July 31 Expo; August 1 tutorials; August 2–4 main conference; August 5–6 workshops. Main-track submission deadlines have not been announced as of 2026-11-07.",
+      "sources": [
+        {
+          "url": "https://icml.cc/",
+          "evidence": "ICML 2027 dates and location confirmed: Riocentro, Rio de Janeiro, Brazil, July 31 – August 6, 2027. The ICML 2027 Call for Papers will be posted soon. Submission deadlines ... will appear here once they are confirmed."
+        },
+        {
+          "url": "https://icml.cc/Conferences/2027/Dates",
+          "evidence": "Expo Sat Jul31; tutorials Sun Aug1; main Mon Aug2–Wed Aug4; workshops Thu Aug5–Fri Aug6."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "ijcai-2027",
+      "name": "IJCAI 2027",
+      "site": "https://2027.ijcai.org/",
+      "location": "Kyoto, Japan (main)",
+      "dates": {
+        "conf_start": "2027-08-07",
+        "conf_end": "2027-08-13"
+      },
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "Planning",
+          "Reasoning"
+        ]
+      },
+      "deadlines": [
+        {
+          "type": "Abstract",
+          "due": "2027-01-05T11:59:00Z",
+          "original": "2027-01-04 23:59 AoE (UTC-12)"
+        },
+        {
+          "type": "Full paper",
+          "due": "2027-01-12T11:59:00Z",
+          "original": "2027-01-11 23:59 AoE (UTC-12)"
+        }
+      ],
+      "timezone": "AOE (UTC-12)",
+      "tags": [],
+      "note": "Main-track deadlines. Calendar covers Kyoto August 7–13; satellite event in Hengqin, China August 15–17.",
+      "sources": [
+        {
+          "url": "https://2027.ijcai.org/ijcai-2027-call-for-papers-main-track/",
+          "evidence": "Abstract January4,2027; author information and full paper January11,2027. All times23:59 Anywhere On Earth UTC-12. Kyoto August7–13; Hengqin August15–17."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "kdd-2027",
+      "name": "KDD 2027",
+      "site": "https://kdd2027.kdd.org/",
+      "location": "San Jose, California, United States",
+      "dates": {
+        "conf_start": "2027-08-01",
+        "conf_end": "2027-08-05"
+      },
+      "areas": {
+        "AI": [
+          "ML",
+          "Data Mining"
+        ]
+      },
+      "deadlines": [
+        {
+          "type": "Research cycle 1 abstract",
+          "due": "2026-07-20T11:59:00Z",
+          "original": "2026-07-19 end-of-day AoE; represented at minute precision 23:59"
+        },
+        {
+          "type": "Research cycle 1 paper",
+          "due": "2026-07-27T11:59:00Z",
+          "original": "2026-07-26 end-of-day AoE; represented at minute precision 23:59"
+        }
+      ],
+      "timezone": "AOE (UTC-12)",
+      "tags": [
+        "Cycle 2 TBA"
+      ],
+      "note": "Research track has two cycles. Only cycle 1 deadlines are announced; cycle 2 dates remain TBA. End-of-day AoE dates are stored at 23:59 minute precision.",
+      "sources": [
+        {
+          "url": "https://kdd2027.kdd.org/",
+          "evidence": "August1–5,2027, San Jose McEnery Convention Center."
+        },
+        {
+          "url": "https://kdd2027.kdd.org/research-track-call-for-papers/",
+          "evidence": "First cycle abstract July19,2026; paper July26,2026. All deadlines end-of-day Anywhere on Earth."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "naacl-2027",
+      "name": "NAACL 2027",
+      "areas": {
+        "AI": [
+          "NLP"
+        ]
+      },
+      "location": "San Francisco, California, United States",
+      "dates": {
+        "conf_start": "2027-06-01",
+        "conf_end": "2027-06-05"
+      },
+      "site": "https://2027.naacl.org/",
+      "deadlines": [
+        {
+          "type": "ARR submission (long & short papers)",
+          "due": "2026-10-13T11:59:00Z",
+          "original_date": "2026-10-12",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2027.naacl.org/calls/main_conference_papers/"
+        },
+        {
+          "type": "NAACL commitment",
+          "due": "2026-12-24T11:59:00Z",
+          "original_date": "2026-12-23",
+          "original_time": "23:59",
+          "original_timezone": "UTC-12:00 (AoE)",
+          "source": "https://2027.naacl.org/calls/main_conference_papers/"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ARR"
+      ],
+      "note": "Officially verified 2026-11-07. ARR submission and NAACL commitment are separate stages. Papers require completed ARR reviews before commitment.",
+      "sources": [
+        {
+          "url": "https://2027.naacl.org/",
+          "evidence": "San Francisco, California, United States June 1 - 5, 2027."
+        },
+        {
+          "url": "https://2027.naacl.org/calls/main_conference_papers/",
+          "evidence": "ARR submission deadline October 12, 2026; NAACL commitment deadline December 23, 2026; conference June 1–5, 2027; all deadlines 11:59 p.m. UTC -12h."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "neurips-2026",
+      "name": "NeurIPS 2026",
+      "site": "https://neurips.cc/Conferences/2026",
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "RL"
+        ]
+      },
+      "location": "Sydney, Australia (main)",
+      "dates": {
+        "conf_start": "2026-12-06",
+        "conf_end": "2026-12-12"
+      },
+      "deadlines": [
+        {
+          "type": "Abstract",
+          "due": "2026-05-05T11:59:00Z",
+          "original": "2026-05-04 AoE (date only; represented at 23:59 minute precision)",
+          "source": "https://neurips.cc/Conferences/2026/CallForPapers"
+        },
+        {
+          "type": "Full Paper",
+          "due": "2026-05-07T11:59:00Z",
+          "original": "2026-05-06 AoE (date only; represented at 23:59 minute precision)",
+          "source": "https://neurips.cc/Conferences/2026/CallForPapers"
+        }
+      ],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ML"
+      ],
+      "note": "Main Sydney event: December 6–12, 2026. Atlanta and Paris satellite events: December 9–13. Main-track abstract/paper submission dates were May 4/May 6 AoE; exact clock time is not stated in the fetched official source. Published AoE dates are represented at 23:59 minute precision, matching the existing database.",
+      "sources": [
+        {
+          "url": "https://neurips.cc/Conferences/2026",
+          "evidence": "Sydney (Main) Dec 6 - 12"
+        },
+        {
+          "url": "https://neurips.cc/Conferences/2026/Dates",
+          "evidence": "Sydney Dec 6 Expo, Dec 7 Tutorials, Dec 8–10 Main Conference, Dec 11–12 Workshops; Atlanta/Paris Dec 9–13."
+        },
+        {
+          "url": "https://neurips.cc/Conferences/2026/CallForPapers",
+          "evidence": "Abstract May 4, 2026 (AOE); full paper including supplementary May 6, 2026 AOE."
+        }
+      ],
+      "verified_on": "2026-11-07"
+    },
+    {
+      "id": "neurips-2027",
+      "name": "NeurIPS 2027",
+      "site": "https://neurips.cc/Conferences/FutureMeetings",
+      "areas": {
+        "AI": [
+          "ML",
+          "NLP",
+          "CV",
+          "RL"
+        ]
+      },
+      "location": "Europe (city to be announced)",
+      "dates": {
+        "conf_start": null,
+        "conf_end": null
+      },
+      "deadlines": [],
+      "timezone": "AOE (UTC−12)",
+      "tags": [
+        "ML",
+        "Dates TBA"
+      ],
+      "note": "Official future-meetings page lists Europe for 2027. City, conference dates and submission deadlines have not been announced as of 2026-11-07.",
+      "sources": [
+        {
+          "url": "https://neurips.cc/Conferences/FutureMeetings",
+          "evidence": "2027 -- Europe"
+        }
+      ],
+      "verified_on": "2026-11-07"
+    }
+  ]
+}

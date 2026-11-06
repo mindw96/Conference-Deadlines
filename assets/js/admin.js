@@ -20,7 +20,7 @@
 
     // --- HELPER FUNCTIONS for Edit Modal ---
 
-    function addAreaInput(category = '', subfields = '') {
+    function addAreaInput(category = '', subfields = []) {
         CD.addAreaInput(areasContainer, category, subfields);
     }
 
@@ -30,7 +30,7 @@
         const formattedDate = CD.formatForDateTimeLocalInput(date);
         div.innerHTML = `
             <input type="text" class="form-control deadline-type" placeholder="Deadline Type" value="${CD.escapeAttr(type)}">
-            <input type="datetime-local" class="form-control deadline-date" value="${CD.escapeAttr(formattedDate)}">
+            <input type="datetime-local" class="form-control deadline-date" value="${CD.escapeAttr(formattedDate)}" data-original-due="${CD.escapeAttr(date)}">
             <button class="btn btn-outline-danger remove-deadline-btn" type="button">&times;</button>
         `;
         deadlinesContainer.appendChild(div);
@@ -94,9 +94,11 @@
         }
 
         // 3. Compare 'deadlines' by creating a comparable string
-        const comparableDeadlines = deadlines => JSON.stringify(deadlines.map(d => ({
-            type: d.type || d.deadline_type, due: new Date(d.due || d.due_date).toISOString()
-        })).sort((a, b) => a.due.localeCompare(b.due) || a.type.localeCompare(b.type)));
+        const comparableDeadlines = deadlines => JSON.stringify(deadlines.map(d => {
+            const due = d.due || d.due_date;
+            return { type: d.type || d.deadline_type,
+                due: Number.isFinite(Date.parse(due)) ? new Date(due).toISOString() : String(due) };
+        }).sort((a, b) => a.due.localeCompare(b.due) || a.type.localeCompare(b.type)));
         const originalDeadlines = comparableDeadlines(original.deadlines || []);
         const suggestionDeadlines = comparableDeadlines(suggestion.deadlines);
 
@@ -161,6 +163,8 @@
                         <p class="card-text mb-1"><strong>Dates:</strong> ${CD.escapeHTML(s.conf_start_date || 'N/A')} to ${CD.escapeHTML(s.conf_end_date || 'N/A')}</p>
                         ${s.areas && CD.validAreas(s.areas) ? '<p><strong>Areas:</strong> ' + CD.escapeHTML(JSON.stringify(s.areas)) + '</p>' : categoryHTML + subfieldsHTML}
                         <p class="card-text mb-1"><strong>Deadlines:</strong><br><small>${deadlinesText}</small></p>
+                        ${!isEdit && Array.isArray(s.tags) && s.tags.length ? '<p class="card-text mb-1"><strong>Tags:</strong> ' + CD.escapeHTML(s.tags.join(', ')) + '</p>' : ''}
+                        ${!isEdit && s.note ? '<p class="card-text mb-1"><strong>Note:</strong> ' + CD.escapeHTML(s.note) + '</p>' : ''}
                         ${changesHTML}
                         <div class="mt-3">
                             <button class="btn btn-success btn-sm approve-btn" ${invalid ? 'disabled' : ''}>Approve</button>
@@ -268,7 +272,7 @@
         areasContainer.innerHTML = '';
         if (CD.isAreasObject(data.areas)) {
             for (const category of Object.keys(data.areas)) {
-                addAreaInput(category, data.areas[category].join(', '));
+                addAreaInput(category, data.areas[category]);
             }
         }
 
