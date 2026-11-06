@@ -660,6 +660,7 @@ a.cd-icon-btn:hover {
 }
 
 .cd-card-ident {
+    flex: 1;
     min-width: 0;
 }
 
@@ -687,10 +688,15 @@ a.cd-icon-btn:hover {
     flex-direction: column;
     align-items: flex-end;
     flex-shrink: 0;
+    min-width: 0;
+    max-width: min(42%, 9rem);
 }
 
 .cd-card-status .cd-eyebrow {
     margin-top: .3125rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: right;
 }
 
 /* Status chip: D-25 / D-DAY / D+12 / Closed / Coming Soon */
